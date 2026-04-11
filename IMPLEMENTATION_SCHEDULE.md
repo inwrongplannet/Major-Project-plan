@@ -6,6 +6,82 @@
 
 ---
 
+## WEEK 1: Audio Processing & Dataset Preparation (Days 1-9)
+
+### Day 1: Audio Processing Setup & Gammatone Filterbank (ARCH_1)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Setup Python environment (librosa, numpy, scipy) | Setup simulation environment (energy profiler skeleton) | Create project documentation structure |
+| Implement Gammatone filterbank (64 channels, 50-8000 Hz) | Design energy profiler architecture | Setup monitoring dashboards |
+| Load ESC-50 dataset (gunshot, chainsaw, vehicle, silence) | Create data logging framework | Prepare test harness |
+| Generate mel-spectrogram outputs: (T, 64) shape | Document profiler assumptions | Create git workflow guide |
+
+### Day 2: Mel-Spectrogram Computation & Validation (ARCH_1)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Compute mel-spectrograms from raw audio @ 16kHz | Profile Gammatone computation time (target <100ms per 10s) | Validate output dimensions |
+| Normalize to [-80, 0] dB range per ARCH_1 spec | Test memory footprint (frame buffer size) | Generate test audio samples |
+| Validate output shape consistency: (1000, 64) for 10s audio | Create thermal model for continuous operation | Document data format specs |
+| Create audio preprocessing pipeline (batch processing) | Test CPU utilization during processing | Verify numerical accuracy |
+
+### Day 3: Spike Conversion - LIF Neuron Model Setup (ARCH_2)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Implement Leaky Integrate-and-Fire (LIF) neuron model | Test LIF latency per frame (target ~15ms per 10s audio) | Validate spike output format |
+| Configure LIF parameters: τ_mem=5ms, V_th=1.0, decay=0.9 | Profile energy per spike generation | Create spike visualization tools |
+| Convert mel-spectrograms → spike trains (frame-level, NOT sample-level) | Create spike rate analyzer | Generate example spike patterns |
+| Output format: (T, 64, 1) binary spikes per frame | Test memory efficiency | Verify temporal dynamics |
+
+### Day 4: Spike Output Validation & Ground-Truth Labels (ARCH_2)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Validate spike trains match LIF dynamics (firing rates 10-50%) | Simulate spike transmission latency | Validate label consistency |
+| Create ground-truth labels for 25 ESC-50 samples (gunshot=1, other=0) | Test spike encoding efficiency | Generate label statistics |
+| Test spike-to-firing-rate conversion (Hz measurement) | Profile conversion overhead | Document spike format specs |
+| Implement spike batch processing (parallel LIF neurons) | Create performance profiler | Verify output reproducibility |
+
+### Day 5: Dataset Consolidation & Normalization (ARCH_3)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Consolidate 25 ESC-50 samples into master dataset | Test normalization accuracy (target ±5% deviation) | Validate consolidation process |
+| Create forest-specific normalization: Corbett, Seshachalam, Sundarbans | Profile normalization latency (<1 min per 100 samples) | Document forest characteristics |
+| Normalize spike statistics per forest (mean=0, std=1 per forest) | Test normalization stability | Generate forest comparison report |
+| Validate normalized output shape: (25, 1000, 64, 1) | Create normalization lookup tables | Verify data integrity |
+
+### Day 6: Data Augmentation Pipeline (ARCH_3)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Implement augmentation: time-shift (±10%), pitch-shift (±2 semitones), noise injection | Test augmentation impact on spike patterns | Validate augmented data quality |
+| Generate 600 augmented samples from 25 originals (12x per sample) | Profile augmentation time (target <10 min for 600 samples) | Monitor memory during augmentation |
+| Create stratified split: 80% train (480), 20% test (120) | Test class balance preservation | Generate augmentation statistics |
+| Validate augmented dataset shape: (600, 1000, 64, 1) with labels | Create augmentation config templates | Verify train/test separation |
+
+### Day 7: Dataset Export & Format Validation (ARCH_3)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Export normalized + augmented dataset to .npz format | Validate export file size & compression efficiency | Verify all samples exportable |
+| Create dataset metadata file (forest params, augmentation configs) | Test loading speed from .npz (target <100ms for full dataset) | Generate dataset summary |
+| Implement dataset loader for training pipeline | Profile I/O performance (latency, throughput) | Document file formats |
+| Validate dataset integrity: shape, dtype, range checks | Create data validation checklist | Backup dataset to git-safe location |
+
+### Day 8: Training Readiness & Pipeline Integration (ARCH_3 → ARCH_4 prep)
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| Create train/validation/test split with stratification (480/120 train) | Test end-to-end pipeline latency (ARCH_1→2→3) | Validate pipeline correctness |
+| Implement data loading batches (batch_size=32, shuffle=True) | Profile memory usage across pipeline | Generate pipeline timing breakdown |
+| Create ground-truth label file (600 labels: 300 gunshot, 300 other) | Test label consistency throughout pipeline | Monitor data quality metrics |
+| Validate input ready for SNN training (ARCH_4) | Simulate training data flow | Prepare training environment |
+
+### Day 9: Week 1 Integration & Checkpoint
+| Abhishek M | Kavya | Abhishek S |
+|---|---|---|
+| End-to-end test: raw audio → normalized spike dataset (ARCH_1→2→3) | Validate energy profiler baseline measurements | Generate Week 1 summary report |
+| Save intermediate checkpoints (mel-specs, spikes, normalized data) | Create baseline power consumption model | Verify all deliverables ready |
+| Document data format specs for ARCH_4 (spike input requirements) | Test profiler stability over 8 days | Create deployment readiness checklist |
+| Prepare final dataset (600 samples) for SNN training on Day 10 | Validate assumptions with simulated data | Confirm team readiness for Week 2 |
+
+---
+
 ## WEEK 2: SNN Training & Optimization (Days 10-16)
 
 ### Day 10: SNN Architecture Design & Setup (ARCH_4)
@@ -98,24 +174,7 @@
 | Validate alert delivery rate >95% (1 miss per 20 alerts) | Test network under peak load (10 alerts/sec) | Verify congestion handling |
 | Test alert queuing for intermittent connectivity | Simulate base station failure modes | Validate queue persistence |
 | Measure effective throughput (bits/second through mesh) | Test message priority (urgent vs. routine alerts) | Generate reliability metrics |
-| Document alert loss scenarios & impact | Create fallback routing paths | Build alert delivery SLA table |
-
-### Day 21: Field Validation - Corbett National Park (Tier 1)
-| Abhishek M | Kavya | Abhishek S |
-|---|---|---|
-| Deploy on 2 edge devices in Corbett | Log energy consumption in real conditions | Document deployment procedures |
-| Test inference on live audio (birds, vehicles, silence) | Monitor network topology stability | Record all metrics to database |
-| Measure actual latency (target <3s end-to-end) | Track power consumption vs. predictions | Compare simulations to reality |
-| Validate alert generation (confidence >0.85 for threats) | | Validate data collection scripts |
-
-### Day 22: Field Validation - Seshachalam + Sundarbans (Tier 2-3), Summary Docs
-| Abhishek M | Kavya | Abhishek S |
-|---|---|---|
-| Deploy on edge devices in Seshachalam & Sundarbans | Summarize energy profiler accuracy (target ±10%) | Generate final report |
-| Validate inference accuracy across 3 forests | Summarize network simulator results | Create deployment guide |
-| Compare real vs. predicted power consumption | Validate 50-75x power reduction achieved | Create operational handbook |
-| Finalize model weights & inference code | Document all assumptions & limitations | Archive all test data |
-| | | Create high-level summary architecture doc |
+| Document alert loss scenarios & impact | Create fallback routing paths | Build alert delivery SLA table + compile final deliverables |
 
 ---
 
@@ -152,7 +211,7 @@ Days 10-13: SNN training (ARCH_4 - uses ARCH_3 normalized & augmented data)
     ↓
 Days 14-16: Inference + payload (ARCH_5 + ARCH_6 - uses ARCH_4 trained model)
     ↓
-Days 17-22: Simulation + field validation (ARCH_7 + ARCH_8 + real deployment - depends on Days 1-16)
+Days 17-20: Simulation + field validation (ARCH_7 + ARCH_8 + real deployment - depends on Days 1-16)
 ```
 
 **Parallel Work Streams**:
