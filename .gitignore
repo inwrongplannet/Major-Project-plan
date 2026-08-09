@@ -135,3 +135,7 @@ Thumbs.db
 
 # Project-specific
 Resources/
+
+# Eco-Sentry run outputs
+artifacts/
+samples/

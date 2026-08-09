@@ -1,0 +1,11 @@
+# Eco-Sentry runtime dependencies.
+# Tested on Python 3.12 / macOS 15 with the versions in the right column.
+
+numpy>=1.24,<3          # 1.26.4    tensors, LIF simulation, BPTT
+scipy>=1.10             # 1.16.3    filters, STFT windows, resampling, chirps
+h5py>=3.8               # 3.11.0    prepared_dataset.h5
+cryptography>=41.0      # 47.0.0    AES-256-CBC + PBKDF2 (ARCH_6)
+matplotlib>=3.7         # 3.10.8    energy trajectory plots (optional at runtime)
+
+# Development only
+pytest>=7.4             # 9.0.2     test suite
