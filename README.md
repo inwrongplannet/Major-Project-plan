@@ -42,6 +42,25 @@ python -m ecosentry run --preset full
 
 ---
 
+## Dashboard
+
+`dashboard.html` at the repo root is a self-contained results dashboard —
+acceptance scorecard, training curves, confusion matrix, per-forest network
+and energy simulation, and the honest list of what doesn't work yet. No
+build step, no server required.
+
+```bash
+open dashboard.html                # macOS
+xdg-open dashboard.html            # Linux
+```
+
+Or just double-click it / drag it into a browser tab. It reads the numbers
+straight out of `artifacts/pipeline_report.json`, so re-run
+`python -m ecosentry run --preset full` first if you want it to reflect a
+fresh run.
+
+---
+
 ## Repository layout
 
 | Path | Document | What it implements |
