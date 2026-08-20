@@ -14,87 +14,87 @@ This document provides a comprehensive reference for all tensor shapes, data for
 │ Format: WAV/MP3, Variable sample rate                                       │
 │ Typical duration: 10 seconds                                                │
 │ ↓                                                                           │
-│ PROCESS: Load → Resample to 16kHz → RMS normalize → Bandpass filter        │
-│          → STFT (window=512, hop=160) → Mel-scale (64 bands) → dB scale    │
+│ PROCESS: Load → Resample to 16kHz → RMS normalize → Bandpass filter         │
+│          → STFT (window=512, hop=160) → Mel-scale (64 bands) → dB scale     │
 │ ↓                                                                           │
-│ OUTPUT: MEL-SPECTROGRAM TENSOR                                             │
-│         Shape: (T, 64)                                                     │
-│         - T = 1000 for 10s audio (100 frames/second at 10ms hop)           │
-│         - 64 = mel-frequency bands (50Hz to 8kHz perceptual scale)         │
-│         - Values: [-80, 0] dB (log-magnitude)                              │
-│         - Dtype: float32                                                   │
-│         - Size: ~32KB uncompressed                                         │
-│         - Example shape: (1000, 64)                                        │
+│ OUTPUT: MEL-SPECTROGRAM TENSOR                                              │
+│         Shape: (T, 64)                                                      │
+│         - T = 1000 for 10s audio (100 frames/second at 10ms hop)            │
+│         - 64 = mel-frequency bands (50Hz to 8kHz perceptual scale)          │
+│         - Values: [-80, 0] dB (log-magnitude)                               │
+│         - Dtype: float32                                                    │
+│         - Size: ~32KB uncompressed                                          │
+│         - Example shape: (1000, 64)                                         │
 └─────────────────────────────────────────────────────────────────────────────┘
             ↓
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ SPIKE CONVERSION (NEUROMORPHIC ENCODING)               ARCH_2              │
-│ Input: Mel-spectrogram (T, 64) from ARCH_1                                 │
+│ SPIKE CONVERSION (NEUROMORPHIC ENCODING)               ARCH_2               │
+│ Input: Mel-spectrogram (T, 64) from ARCH_1                                  │
 │ ↓                                                                           │
-│ PROCESS: Normalize input [-80,0]→[0,1] → Apply LIF neurons (64 neurons)    │
-│          → Binary spike generation → Output at frame-level resolution      │
+│ PROCESS: Normalize input [-80,0]→[0,1] → Apply LIF neurons (64 neurons)     │
+│          → Binary spike generation → Output at frame-level resolution       │
 │ ↓                                                                           │
-│ OUTPUT: SPIKE TRAIN TENSOR                                                 │
-│         Shape: (T, 64, 1)                                                  │
-│         - T = 1000 frames (frame-level, NOT sample-level!)                 │
-│         - 64 = LIF neurons (one per mel-band)                              │
-│         - 1 = binary spike dimension                                       │
-│         - Values: {0, 1} binary (0=no spike, 1=spike occurred)             │
-│         - Dtype: uint8 or bool                                             │
-│         - Sparsity: ~25% neurons fire per frame (on average)               │
-│         - Size: ~64KB (1000×64×1 bytes)                                    │
-│         - Per-sample latency: 15ms (frame-level processing)                │
-│         - Example shape: (1000, 64, 1)                                     │
+│ OUTPUT: SPIKE TRAIN TENSOR                                                  │
+│         Shape: (T, 64, 1)                                                   │
+│         - T = 1000 frames (frame-level, NOT sample-level!)                  │
+│         - 64 = LIF neurons (one per mel-band)                               │
+│         - 1 = binary spike dimension                                        │
+│         - Values: {0, 1} binary (0=no spike, 1=spike occurred)              │
+│         - Dtype: uint8 or bool                                              │
+│         - Sparsity: ~25% neurons fire per frame (on average)                │
+│         - Size: ~64KB (1000×64×1 bytes)                                     │
+│         - Per-sample latency: 15ms (frame-level processing)                 │
+│         - Example shape: (1000, 64, 1)                                      │
 │                                                                             │
-│ KEY INSIGHT: Frame-level (10ms) resolution, NOT 16kHz sample-level!        │
-│ Frame interval: 10ms (matches hop_length from ARCH_1)                     │
-│ Firing rate target: 25% ±5% (tuned in ARCH_3)                             │
+│ KEY INSIGHT: Frame-level (10ms) resolution, NOT 16kHz sample-level!         │
+│ Frame interval: 10ms (matches hop_length from ARCH_1)                       │
+│ Firing rate target: 25% ±5% (tuned in ARCH_3)                               │
 └─────────────────────────────────────────────────────────────────────────────┘
             ↓
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ DATASET PREPARATION & FOREST NORMALIZATION           ARCH_3                │
-│ Input: 600 raw spike tensors from ARCH_2                                   │
+│ DATASET PREPARATION & FOREST NORMALIZATION           ARCH_3                 │
+│ Input: 600 raw spike tensors from ARCH_2                                    │
 │ ↓                                                                           │
-│ STAGE 1: Load 600 spike samples                                            │
-│          - ESC-50: 100 samples                                             │
-│          - UrbanSound8K: 150 samples                                       │
-│          - Corbett (Custom): 150 samples                                   │
-│          - Seshachalam (Custom): 100 samples                               │
-│          - Sundarbans (Custom): 100 samples                                │
-│          Shape: (600, T, 64, 1)                                            │
-│          - 600 = number of training samples                                │
-│          - T ≈ 1000 frames per sample                                      │
-│          - 64 = mel-band neurons                                           │
-│          - 1 = binary spike dimension                                      │
+│ STAGE 1: Load 600 spike samples                                             │
+│          - ESC-50: 100 samples                                              │
+│          - UrbanSound8K: 150 samples                                        │
+│          - Corbett (Custom): 150 samples                                    │
+│          - Seshachalam (Custom): 100 samples                                │
+│          - Sundarbans (Custom): 100 samples                                 │
+│          Shape: (600, T, 64, 1)                                             │
+│          - 600 = number of training samples                                 │
+│          - T ≈ 1000 frames per sample                                       │
+│          - 64 = mel-band neurons                                            │
+│          - 1 = binary spike dimension                                       │
 │                                                                             │
-│ STAGE 2: Forest-specific normalization                                     │
+│ STAGE 2: Forest-specific normalization                                      │
 │          - Corbett (dense forest): High noise suppression                   │
 │          - Seshachalam (open terrain): Simple global normalization          │
 │          - Sundarbans (wetlands): Sustained pattern removal                 │
-│          - Target firing rate: 25% ±5% across all forests                  │
-│          Shape remains: (600, T, 64, 1)                                    │
+│          - Target firing rate: 25% ±5% across all forests                   │
+│          Shape remains: (600, T, 64, 1)                                     │
 │                                                                             │
-│ STAGE 3: Train/Validation/Test split (60/20/20)                            │
-│          - Train: 360 samples (60%)                                        │
-│          - Validation: 120 samples (20%)                                   │
-│          - Test: 120 samples (20%)                                         │
-│          - Stratified by class and forest                                  │
+│ STAGE 3: Train/Validation/Test split (60/20/20)                             │
+│          - Train: 360 samples (60%)                                         │
+│          - Validation: 120 samples (20%)                                    │
+│          - Test: 120 samples (20%)                                          │
+│          - Stratified by class and forest                                   │
 │                                                                             │
-│ STAGE 4: Data augmentation (600 → 1200 samples)                            │
-│          - Mixup (50% probability): Interpolate 2 spike tensors            │
-│          - Time-shift (75% probability): ±5 frames (±50ms)                 │
-│          - Noise (25% probability): Dropout-based augmentation             │
-│          Total: 600 original + 600 augmented = 1200 samples                │
-│          Final shapes:                                                     │
-│          - Training: 720 samples after augmentation                        │
-│          - Validation: 120 samples (no augmentation)                       │
-│          - Test: 120 samples (no augmentation)                             │
-│          - Each sample: (T, 64, 1) with T ≈ 1000 frames                   │
+│ STAGE 4: Data augmentation (600 → 1200 samples)                             │
+│          - Mixup (50% probability): Interpolate 2 spike tensors             │
+│          - Time-shift (75% probability): ±5 frames (±50ms)                  │
+│          - Noise (25% probability): Dropout-based augmentation              │
+│          Total: 600 original + 600 augmented = 1200 samples                 │
+│          Final shapes:                                                      │
+│          - Training: 720 samples after augmentation                         │
+│          - Validation: 120 samples (no augmentation)                        │
+│          - Test: 120 samples (no augmentation)                              │
+│          - Each sample: (T, 64, 1) with T ≈ 1000 frames                     │
 │                                                                             │
-│ OUTPUT: Balanced, normalized, augmented spike dataset                      │
-│         Shape: (1200, T, 64, 1) total after augmentation                   │
-│         Size: ~76.8MB (1200×1000×64×1 bytes)                               │
-│         Training/Val/Test: 720 + 240 + 240 = 1200 samples                  │
+│ OUTPUT: Balanced, normalized, augmented spike dataset                       │
+│         Shape: (1200, T, 64, 1) total after augmentation                    │
+│         Size: ~76.8MB (1200×1000×64×1 bytes)                                │
+│         Training/Val/Test: 720 + 240 + 240 = 1200 samples                   │
 └─────────────────────────────────────────────────────────────────────────────┘
             ↓
 ┌─────────────────────────────────────────────────────────────────────────────┐
