@@ -71,7 +71,7 @@ fresh run.
 | `ecosentry/arch4_training.py` | ARCH_4 | Surrogate-gradient BPTT, Adam, early stopping (pure NumPy) |
 | `ecosentry/arch5_inference.py` | ARCH_5 | Edge inference, adaptive thresholds, debouncing, INT8 quantisation |
 | `ecosentry/arch6_payload.py` | ARCH_6 | JSON → zlib → AES-256-CBC → envelope, store-and-forward queue |
-| `ecosentry/arch6_beacon.py` | ARCH_6 | 12-byte status & health beacon payload, compact AES encryption |
+| `ecosentry/arch6_beacon.py` | ARCH_6 | 16-byte status & health beacon payload, truncated HMAC auth |
 | `ecosentry/arch7_energy.py` | ARCH_7 | Battery discharge, solar harvest, 30-day mission projection |
 | `ecosentry/arch8_network.py` | ARCH_8 | LoRa PHY, mesh topologies, Dijkstra routing, Monte-Carlo delivery |
 | `ecosentry/gateway.py` | PRIORITY_PAYLOAD_DELIVERY | Gateway priority proxy, LLQ QoS, EF DSCP, local ACK, dedupe |
