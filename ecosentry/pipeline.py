@@ -664,6 +664,8 @@ def run_full_pipeline(
     )
     stage4 = run_simulation_stage(preset, out_dir, base_cfg, verbose)
 
+    delivery_report = run_delivery_stage(preset_name, scenario, out_dir=out_dir, seed=seed)
+
     report = {
         "preset": preset.name,
         "scenario": scenario,
@@ -673,9 +675,11 @@ def run_full_pipeline(
         "training": {k: v for k, v in stage2.items() if k != "model"},
         "alerts": {k: v for k, v in stage3.items() if k != "events"},
         "simulations": stage4,
+        "delivery": delivery_report,
         "acceptance": acceptance_summary(stage1, stage2, stage3, stage4),
     }
     (out_dir / "pipeline_report.json").write_text(json.dumps(report, indent=2, default=str))
+    render_dashboard(report, out_dir)
 
     if verbose:
         print("\n" + "=" * 72)
@@ -771,3 +775,85 @@ def acceptance_summary(stage1: Dict, stage2: Dict, stage3: Dict, stage4: Dict) -
             f"{min_endurance} days (worst forest)", ">=30 days", min_endurance >= 30
         ),
     }
+
+
+def render_dashboard(report: Dict, out_dir: Path) -> Path:
+    """Fill dashboard_template.html with this run's pipeline_report.json
+    and write the result to out_dir/dashboard.html (Phase 0, Task P0.3)."""
+    template_path = Path(__file__).parent / "dashboard_template.html"
+    template = template_path.read_text(encoding="utf-8")
+    injected = template.replace("__REPORT_JSON__", json.dumps(report, default=str))
+    out_path = out_dir / "dashboard.html"
+    out_path.write_text(injected, encoding="utf-8")
+    return out_path
+
+
+def run_delivery_stage(
+    preset: str = "quick",
+    scenario: str = "corbett",
+    messages: int = 300,
+    seed: int = 42,
+    out_dir: Optional[Path] = None,
+) -> Dict:
+    """Monte-Carlo campaign through PriorityGateway + OfficerDeliveryTracker
+    for one forest scenario (Phase 5, new architecture)."""
+    from .arch6_payload import DeviceConfig, generate_alert_payload
+    from .config import GatewayConfig
+    from .gateway import BackhaulLink, MqttSink, PriorityGateway
+    from .officer_delivery import OfficerDeliveryConfig, OfficerDeliveryTracker
+
+    out_dir = Path(out_dir) if out_dir is not None else Path("artifacts")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    rng = np.random.default_rng(seed)
+    device = DeviceConfig(device_id=f"SENTRY_{scenario.upper()}")
+    gateway = PriorityGateway(device.encryption_key, GatewayConfig(), BackhaulLink(seed=seed), MqttSink())
+    officer_tracker = OfficerDeliveryTracker(cfg=OfficerDeliveryConfig(), rng=rng)
+
+    dispatched = 0
+    now = 0.0
+    for i in range(messages):
+        now += float(rng.uniform(1.0, 30.0))
+        is_threat = rng.random() < 0.3
+        class_id = 0 if is_threat else 2
+        confidence = float(rng.uniform(0.86, 0.99)) if is_threat else float(rng.uniform(0.5, 0.8))
+        result = {
+            "class_id": class_id,
+            "confidence": confidence,
+            "sequence": i % 256,
+            "timestamp": now,
+        }
+        packet = generate_alert_payload(result, device)
+        outcome = gateway.handle_uplink(packet["message"], "S1", now=now)
+        if outcome.get("priority"):
+            officer_tracker.dispatch(sequence=i % 256, officer_id="ranger_1", now=now)
+            dispatched += 1
+
+    resolved = []
+    tick_now = now
+    for _ in range(500):
+        tick_now += 5.0
+        for seq in list(officer_tracker.pending.keys()):
+            r = officer_tracker.tick(seq, tick_now, ack_probability_per_channel=0.85)
+            if r is not None:
+                resolved.append(r)
+        if len(resolved) >= dispatched:
+            break
+
+    acked = [r for r in resolved if r.acked]
+    report = {
+        "scenario": scenario,
+        "messages_sent": messages,
+        "priority_dispatched": dispatched,
+        "officer_acked": len(acked),
+        "officer_ack_rate": (len(acked) / dispatched) if dispatched else None,
+        "officer_ack_latency_p95_s": (
+            float(np.percentile([r.ack_latency_s for r in acked], 95)) if acked else None
+        ),
+        "escalations_triggered": sum(1 for r in resolved if r.acked_via in ("sms", "radio")),
+        "unacknowledged": sum(1 for r in resolved if r.exhausted),
+        "gateway_metrics": gateway.metrics(),
+    }
+    (out_dir / "delivery_report.json").write_text(json.dumps(report, indent=2, default=str))
+    return report
+

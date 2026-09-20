@@ -93,16 +93,31 @@ class DeviceEnergyModel:
         return (quiescent_mj + detection_mj + alert_extra_mj) / day_s
 
     def breakdown_mj_per_day(
-        self, alerts_per_day: float, detections_per_hour: float = 6.0
+        self,
+        alerts_per_day: float,
+        detections_per_hour: float = 6.0,
+        beacon_transmission_mj: float = 0.0,
     ) -> Dict[str, float]:
-        return {
+        """beacon_transmission_mj defaults to 0.0 so every existing caller
+        that doesn't pass it gets the exact pre-Phase-5 numbers (all
+        transmission energy attributed to "transmission"). Pass a non-zero
+        value (see generate_energy_report below) to split it into
+        beacon_transmission and payload_transmission instead."""
+        payload_transmission_mj = self.energy_transmission_mj() * alerts_per_day
+        result = {
             "quiescent": self.quiescent_energy_mj(24 * 3600.0),
             "audio": self.energy_audio_mj() * detections_per_hour * 24,
             "spike_conversion": self.energy_spike_mj() * detections_per_hour * 24,
             "snn_inference": self.energy_inference_mj() * detections_per_hour * 24,
             "encryption": self.energy_encryption_mj() * alerts_per_day,
-            "transmission": self.energy_transmission_mj() * alerts_per_day,
         }
+        if beacon_transmission_mj > 0.0:
+            result["beacon_transmission"] = beacon_transmission_mj * alerts_per_day
+            result["payload_transmission"] = payload_transmission_mj
+        else:
+            result["transmission"] = payload_transmission_mj
+        return result
+
 
 
 # ---------------------------------------------------------------------------
@@ -359,7 +374,18 @@ def generate_energy_report(
         scenario, days or cfg.mission_days, cfg, False, solar_enabled=False, seed=seed
     )
 
-    breakdown = device.breakdown_mj_per_day(scenario.avg_alerts_per_day)
+    from .arch8_network import LoRaPHY
+    from .config import BeaconConfig, NetworkConfig
+
+    net_cfg = NetworkConfig()
+    beacon_cfg = BeaconConfig()
+    phy = LoRaPHY(net_cfg)
+    beacon_toa_s = phy.time_on_air_ms(beacon_cfg.size_bytes, net_cfg.beacon_spreading_factor) / 1000.0
+    beacon_transmission_mj = cfg.power_transmission_mw * beacon_toa_s
+    breakdown = device.breakdown_mj_per_day(
+        scenario.avg_alerts_per_day, beacon_transmission_mj=beacon_transmission_mj
+    )
+
     daily_consumption_wh = sum(breakdown.values()) / 1000.0 / 3600.0
     daily_harvest_wh = float(
         np.sum(solar_profile_24h(cfg))
@@ -413,6 +439,17 @@ def generate_energy_report(
         "survived_mission": solar_run["survived"],
         "power_reduction": power_reduction_table(cfg),
         "recommendations": recommendations,
+        "soc_trajectory_solar": [round(float(x), 2) for x in solar_run["soc_trajectory"]],
+        "soc_trajectory_battery_only": [round(float(x), 2) for x in battery_only["soc_trajectory"]],
+        "daily_series": [
+            {
+                "day": d["day"],
+                "harvest_wh": round(float(d["harvest_wh"]), 3),
+                "consumption_wh": round(float(d["consumption_wh"]), 3),
+                "end_soc": round(float(d["end_soc"]), 1),
+            }
+            for d in solar_run["daily"]
+        ],
         "_solar_run": solar_run,
         "_battery_only": battery_only,
     }

@@ -359,7 +359,7 @@ def test_gateway_routes_threats_to_priority_topic(device):
     assert result["accepted"] and result["priority"]
     assert result["publish"].topic == "priority/alerts"
     assert result["publish"].qos == 1
-    assert result["publish"].dscp == "AF41"
+    assert result["publish"].dscp == "EF"
     assert len(gw.acks_sent) == 1, "priority alerts must get a local ACK"
 
 
@@ -426,3 +426,122 @@ def test_priority_lane_beats_best_effort(device):
     assert metrics["priority"]["delivery_rate"] >= metrics["normal"]["delivery_rate"]
     assert metrics["priority"]["latency_p95_ms"] < metrics["normal"]["latency_p95_ms"]
     assert metrics["airtime_saved_transmissions"] > 0
+
+
+def test_message_queue_tracks_kind_without_changing_priority_order():
+    from ecosentry.arch8_network import MessageQueue
+
+    q = MessageQueue()
+    q.enqueue(b"normal-1", timestamp=1.0, priority=False, kind="payload")
+    q.enqueue(b"beacon-1", timestamp=2.0, priority=True, kind="beacon")
+    q.enqueue(b"payload-1", timestamp=3.0, priority=True, kind="payload")
+
+    batch = q.dequeue_batch(max_messages=3)
+    # Priority messages still dequeue first, regardless of kind.
+    assert batch[0]["priority"] is True
+    assert batch[1]["priority"] is True
+    assert batch[2]["priority"] is False
+    kinds = {m["data"]: m["kind"] for m in batch}
+    assert kinds[b"beacon-1"] == "beacon"
+    assert kinds[b"payload-1"] == "payload"
+    assert kinds[b"normal-1"] == "payload"
+
+
+def test_message_queue_default_kind_is_payload():
+    from ecosentry.arch8_network import MessageQueue
+
+    q = MessageQueue()
+    q.enqueue(b"legacy-call", timestamp=1.0, priority=True)
+    batch = q.dequeue_batch(max_messages=1)
+    assert batch[0]["kind"] == "payload"
+
+
+def test_gateway_uses_ef_dscp_not_af41():
+    from ecosentry.arch6_payload import DeviceConfig, generate_alert_payload
+    from ecosentry.gateway import BackhaulLink, MqttSink, PriorityGateway
+    from ecosentry.config import GatewayConfig
+
+    device = DeviceConfig(device_id="SENTRY_TEST")
+    gw = PriorityGateway(device.encryption_key, GatewayConfig(), BackhaulLink(seed=1), MqttSink())
+    result = {"alert": True, "class_id": 0, "class_name": "gunshot", "confidence": 0.95,
+              "sequence": 1, "timestamp": 1000.0}
+    packet = generate_alert_payload(result, device)
+    gw.handle_uplink(packet["message"], "S1")
+    priority_records = gw.sink.by_topic(gw.cfg.priority_topic)
+    assert len(priority_records) == 1
+    assert priority_records[0].dscp == "EF"
+
+
+def test_gateway_exposes_llq_metrics():
+    from ecosentry.arch6_payload import DeviceConfig
+    from ecosentry.gateway import BackhaulLink, MqttSink, PriorityGateway
+    from ecosentry.config import GatewayConfig
+
+    device = DeviceConfig(device_id="SENTRY_TEST")
+    gw = PriorityGateway(device.encryption_key, GatewayConfig(), BackhaulLink(seed=1), MqttSink())
+    m = gw.metrics()
+    assert "llq_max_credits" in m
+    assert "llq_current_credits" in m
+    assert "llq_baseline_rate_per_day" in m
+
+
+def test_beacon_routes_to_beacon_topic():
+    from ecosentry.arch6_beacon import BeaconPayload, encode_beacon
+    from ecosentry.arch6_payload import DeviceConfig
+    from ecosentry.gateway import BackhaulLink, MqttSink, PriorityGateway
+    from ecosentry.config import GatewayConfig
+
+    device = DeviceConfig(device_id="SENTRY_TEST")
+    gw = PriorityGateway(device.encryption_key, GatewayConfig(), BackhaulLink(seed=1), MqttSink())
+    beacon = BeaconPayload(device_id=1, event_type=0, confidence=0.9, sequence_number=1,
+                            relative_timestamp_s=0, lat_delta_millideg=0, lon_delta_millideg=0)
+    raw = encode_beacon(beacon, device.encryption_key)
+    result = gw.handle_uplink(raw, "S1", now=0.0, kind="beacon")
+    assert result["accepted"] is True
+    assert len(gw.sink.by_topic(gw.cfg.beacon_topic)) == 1
+
+
+def test_orphaned_beacon_flagged_after_timeout():
+    from ecosentry.arch6_beacon import BeaconPayload, encode_beacon
+    from ecosentry.arch6_payload import DeviceConfig
+    from ecosentry.gateway import BackhaulLink, MqttSink, PriorityGateway
+    from ecosentry.config import GatewayConfig
+
+    device = DeviceConfig(device_id="SENTRY_TEST")
+    cfg = GatewayConfig(beacon_orphan_timeout_s=10.0)
+    gw = PriorityGateway(device.encryption_key, cfg, BackhaulLink(seed=1), MqttSink())
+    beacon = BeaconPayload(device_id=1, event_type=0, confidence=0.9, sequence_number=42,
+                            relative_timestamp_s=0, lat_delta_millideg=0, lon_delta_millideg=0)
+    raw = encode_beacon(beacon, device.encryption_key)
+    gw.handle_uplink(raw, "S1", now=0.0, kind="beacon")
+
+    assert gw.check_orphaned_beacons(now=5.0) == []  # still within timeout
+    orphaned = gw.check_orphaned_beacons(now=11.0)
+    assert len(orphaned) == 1
+    assert orphaned[0]["sequence"] == 42
+    # Second call after the first one already removed it: no longer reported.
+    assert gw.check_orphaned_beacons(now=20.0) == []
+
+
+def test_breakdown_defaults_to_single_transmission_key():
+    from ecosentry.arch7_energy import DeviceEnergyModel
+    from ecosentry.config import EnergyConfig
+
+    model = DeviceEnergyModel(EnergyConfig())
+    breakdown = model.breakdown_mj_per_day(alerts_per_day=5.0)
+    assert "transmission" in breakdown
+    assert "beacon_transmission" not in breakdown
+    assert "payload_transmission" not in breakdown
+
+
+def test_breakdown_splits_when_beacon_energy_given():
+    from ecosentry.arch7_energy import DeviceEnergyModel
+    from ecosentry.config import EnergyConfig
+
+    model = DeviceEnergyModel(EnergyConfig())
+    breakdown = model.breakdown_mj_per_day(alerts_per_day=5.0, beacon_transmission_mj=7.2)
+    assert "beacon_transmission" in breakdown
+    assert "payload_transmission" in breakdown
+    assert "transmission" not in breakdown
+    assert breakdown["beacon_transmission"] == 7.2 * 5.0
+

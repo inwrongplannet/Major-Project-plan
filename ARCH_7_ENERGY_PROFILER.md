@@ -627,6 +627,20 @@ See [Component 3: Forest-Specific Energy Profiles](./ARCH_7_ENERGY_PROFILER.md#c
   3. Event-based sampling (only listen during night hours when poaching risk higher)
   4. Adaptive LoRa SF (use SF7 when signal strong, reduce transmission overhead)
 
+### Correction 11: battery capacity and inference energy figures disagree internally
+
+Component 1's pseudocode specifies a 5,000 mAh battery and 3 mW / 20 ms SNN
+inference energy. The "Key Parameters (Finalized -- CRITICAL CORRECTIONS)"
+table further down this same document specifies a 3,000 mAh battery and
+30 mW / 800 ms inference energy -- roughly a 400x difference in energy per
+inference cycle. The implementation (`EnergyConfig` in `config.py`) takes
+battery capacity from Component 1 (5,000 mAh, consistent with the 18.5 Wh
+figure used throughout the rest of this document) and takes inference
+power/timing from the finalized table (30 mW / 800 ms, explicitly marked as
+a correction). This is a judgment call, not a derivation from either
+source alone -- revisit if a hardware prototype measurement contradicts
+either number.
+
 ### Related Documentation
 - **SUMMARY_HIGH_LEVEL_ARCHITECTURE.md** (Week 3): Power & energy management overview
 - **IMPLEMENTATION_SCHEDULE.md** (Days 16-18): Power measurement & battery testing tasks

@@ -374,14 +374,26 @@ class MessageQueue:
     def current_size(self) -> int:
         return sum(len(m["data"]) for m in self.queue)
 
-    def enqueue(self, message: bytes, timestamp: float = 0.0, priority: bool = False) -> bool:
+    def enqueue(
+        self,
+        message: bytes,
+        timestamp: float = 0.0,
+        priority: bool = False,
+        kind: str = "payload",
+    ) -> bool:
+        """kind is one of "beacon" or "payload" (Phase 2). Existing callers
+        that don't pass kind get "payload", matching pre-Phase-2 behavior
+        exactly -- this parameter is additive and does not change eviction
+        or dequeue ordering."""
         ok = True
         while self.current_size + len(message) > self.max_size_bytes and self.queue:
             victim = next((i for i, m in enumerate(self.queue) if not m["priority"]), 0)
             self.queue.pop(victim)
             self.dropped += 1
             ok = False
-        self.queue.append({"data": message, "timestamp": timestamp, "priority": priority})
+        self.queue.append(
+            {"data": message, "timestamp": timestamp, "priority": priority, "kind": kind}
+        )
         return ok
 
     def dequeue_batch(self, max_messages: int = 5) -> List[Dict]:

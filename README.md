@@ -71,13 +71,16 @@ fresh run.
 | `ecosentry/arch4_training.py` | ARCH_4 | Surrogate-gradient BPTT, Adam, early stopping (pure NumPy) |
 | `ecosentry/arch5_inference.py` | ARCH_5 | Edge inference, adaptive thresholds, debouncing, INT8 quantisation |
 | `ecosentry/arch6_payload.py` | ARCH_6 | JSON → zlib → AES-256-CBC → envelope, store-and-forward queue |
+| `ecosentry/arch6_beacon.py` | ARCH_6 | 12-byte status & health beacon payload, compact AES encryption |
 | `ecosentry/arch7_energy.py` | ARCH_7 | Battery discharge, solar harvest, 30-day mission projection |
 | `ecosentry/arch8_network.py` | ARCH_8 | LoRa PHY, mesh topologies, Dijkstra routing, Monte-Carlo delivery |
-| `ecosentry/gateway.py` | PRIORITY_PAYLOAD_DELIVERY | Gateway priority proxy, local ACK, QoS backhaul, dedupe |
+| `ecosentry/gateway.py` | PRIORITY_PAYLOAD_DELIVERY | Gateway priority proxy, LLQ QoS, EF DSCP, local ACK, dedupe |
+| `ecosentry/officer_delivery.py` | — | Multi-channel ACK-based forest officer escalation tracker |
+| `ecosentry/dashboard_template.html` | — | Self-contained results & visualization dashboard template |
 | `ecosentry/synth.py` | — | Synthetic forest audio (stands in for the field recordings) |
-| `ecosentry/pipeline.py` | — | Stage orchestration + acceptance report |
+| `ecosentry/pipeline.py` | — | Stage orchestration, delivery simulation + acceptance report |
 | `ecosentry/config.py` | all | Every documented constant, in one place |
-| `tests/` | — | 110 tests including a numerical gradient check |
+| `tests/` | — | 142 tests covering unit, protocol, energy, network, delivery & dashboard |
 
 ---
 
@@ -90,6 +93,7 @@ python -m ecosentry train   --preset full                       # ARCH_4 on a sa
 python -m ecosentry infer   --audio clip.wav --payload          # ARCH_1/2/5/6 on one file
 python -m ecosentry energy  --scenario all                      # ARCH_7
 python -m ecosentry network --scenario sundarbans --messages 300 # ARCH_8
+python -m ecosentry delivery --scenario corbett --messages 300  # Gateway + officer ACK
 python -m ecosentry synth   --out samples/ --count 6            # write example WAVs
 ```
 
@@ -102,8 +106,11 @@ Outputs written to `artifacts/`:
 | `alert_events.json` | Per-window trace: prediction → payload → hops → backhaul |
 | `energy_report.json` | Per-forest power budget and endurance |
 | `network_report.json` | Delivery / latency / congestion / interference sweeps |
+| `delivery_report.json` | Priority gateway + officer ACK escalation delivery metrics |
+| `dashboard.html` | Interactive dashboard with energy trajectories & delivery funnel |
 | `energy_profiles.png` | 30-day battery trajectories |
 | `pipeline_report.json` | Everything above plus the acceptance table |
+
 
 ---
 

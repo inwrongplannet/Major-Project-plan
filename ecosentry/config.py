@@ -241,6 +241,21 @@ class PayloadConfig:
     priority_header_flag: int = 0x80
 
 
+@dataclass(frozen=True)
+class BeaconConfig:
+    """arch6_beacon.py -- compact critical-event packet (new architecture,
+    not from the original ARCH_* documents)."""
+
+    size_bytes: int = 16
+    body_bytes: int = 13
+    mac_bytes: int = 3
+    version: int = 1
+    #: Only these class_ids are eligible to ride the beacon fast path.
+    #: Vehicle (class 2) and ambient (class 3, if enabled) always use the
+    #: full payload only -- matches THREAT_CLASSES.
+    beacon_eligible_classes: Tuple[int, ...] = (0, 1)
+
+
 # ---------------------------------------------------------------------------
 # ARCH_7: Energy
 # ---------------------------------------------------------------------------
@@ -328,6 +343,11 @@ class NetworkConfig:
     scenario_sf: Dict[str, int] = field(
         default_factory=lambda: {"corbett": 12, "seshachalam": 9, "sundarbans": 10}
     )
+    #: Beacons are small enough to default to the fastest, shortest-range
+    #: spreading factor rather than each forest's payload SF (Phase 5, new
+    #: architecture).
+    beacon_spreading_factor: int = 7
+
 
 
 @dataclass(frozen=True)
@@ -338,7 +358,10 @@ class GatewayConfig:
     normal_topic: str = "alerts"
     priority_qos: int = 1
     normal_qos: int = 0
-    priority_dscp: str = "AF41"
+    #: EF (Expedited Forwarding, RFC 3246) is the correct marking to pair
+    #: with a strict-priority LLQ -- AF41 is meant for bandwidth-guaranteed,
+    #: delay-tolerant traffic like video, not low-latency alert traffic.
+    priority_dscp: str = "EF"
     confidence_threshold: float = 0.85
     backoff_schedule_s: Tuple[float, ...] = (1, 2, 4, 8, 16, 32, 60)
     retention_hours: int = 24
@@ -347,6 +370,16 @@ class GatewayConfig:
     qos_backhaul_loss: float = 0.005
     best_effort_backhaul_ms: float = 450.0
     best_effort_backhaul_loss: float = 0.03
+    #: Beacon fast-path topic/QoS (Phase 1/3, new architecture).
+    beacon_topic: str = "priority/beacons"
+    beacon_qos: int = 0
+    #: If a beacon arrives with no matching full payload within this many
+    #: seconds, raise a degraded alert instead of silently dropping it.
+    beacon_orphan_timeout_s: float = 30.0
+    #: Adaptive LLQ token bucket (Phase 3, new architecture).
+    llq_max_credits_floor: int = 2
+    llq_max_credits_ceiling: int = 20
+    llq_overflow_latency_multiplier: float = 2.5
 
 
 # ---------------------------------------------------------------------------

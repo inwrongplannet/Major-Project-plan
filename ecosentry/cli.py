@@ -68,6 +68,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_net.add_argument("--messages", type=int, default=200)
     p_net.add_argument("--payload-bytes", type=int, default=132)
 
+    p_delivery = sub.add_parser(
+        "delivery", help="Priority delivery pipeline: gateway + officer ack simulation"
+    )
+    p_delivery.add_argument("--scenario", choices=sorted(SCENARIOS), default="corbett")
+    p_delivery.add_argument("--messages", type=int, default=300)
+    p_delivery.add_argument("--seed", type=int, default=42)
+    p_delivery.add_argument("--out", type=Path, default=Path("artifacts"))
+
+
     p_synth = sub.add_parser("synth", help="write synthetic forest audio to WAV files")
     p_synth.add_argument("--out", type=Path, default=Path("samples"))
     p_synth.add_argument("--count", type=int, default=6)
@@ -196,6 +205,16 @@ def cmd_network(args) -> int:
     return 0
 
 
+def cmd_delivery(args) -> int:
+    from .pipeline import run_delivery_stage
+
+    report = run_delivery_stage(
+        scenario=args.scenario, messages=args.messages, seed=args.seed, out_dir=args.out
+    )
+    print(json.dumps(report, indent=2, default=str))
+    return 0
+
+
 def cmd_synth(args) -> int:
     from .synth import synthesize, write_wav
 
@@ -220,8 +239,10 @@ _COMMANDS = {
     "infer": cmd_infer,
     "energy": cmd_energy,
     "network": cmd_network,
+    "delivery": cmd_delivery,
     "synth": cmd_synth,
 }
+
 
 
 def main(argv=None) -> int:

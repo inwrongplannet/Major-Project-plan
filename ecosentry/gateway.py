@@ -22,6 +22,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
+from .arch6_beacon import decode_beacon
 from .arch6_payload import AlertPayload, AlertQueue, parse_alert_message, parse_message_envelope
 from .config import GatewayConfig, THREAT_CLASSES
 
@@ -73,6 +74,67 @@ class BackhaulLink:
         return delivered, latency
 
 
+@dataclass
+class LLQState:
+    """Adaptive low-latency queue for the priority lane (new architecture).
+
+    Priority traffic is never dropped and never queued behind best-effort
+    traffic -- that guarantee is unchanged by this class. What "adaptive"
+    controls is whether a priority forward happens at the fast, uncontended
+    backhaul latency, or at a penalized latency representing the priority
+    lane itself being saturated by an unusual burst (several sensors
+    triggering near-simultaneously on one real incident, or a storm causing
+    a cluster of false positives).
+
+    Two time constants:
+      - A short-horizon token bucket (`credits` / `max_credits` /
+        `refill_per_s`) absorbs bursts up to `max_credits` messages with no
+        penalty, then penalizes further messages until credits refill.
+      - `baseline_rate_per_day`, updated by calling `rebase()` with a
+        trailing multi-day average alert rate, re-derives `max_credits` and
+        `refill_per_s` so a gateway that has been busier than usual gets a
+        proportionally bigger burst allowance, and a quiet gateway shrinks
+        back down. Clamped to [llq_max_credits_floor, llq_max_credits_ceiling]
+        from GatewayConfig.
+    """
+
+    max_credits: int = 3
+    refill_per_s: float = 3 / (24 * 3600.0)
+    credits: float = 3.0
+    last_refill_s: float = 0.0
+    baseline_rate_per_day: float = 5.0
+    overflow_latency_multiplier: float = 2.5
+    credits_floor: int = 2
+    credits_ceiling: int = 20
+
+    def _refill(self, now: float) -> None:
+        elapsed = max(0.0, now - self.last_refill_s)
+        self.credits = min(float(self.max_credits), self.credits + elapsed * self.refill_per_s)
+        self.last_refill_s = now
+
+    def consume(self, now: float) -> float:
+        """Call once per priority forward. Returns the latency multiplier
+        to apply to that forward: 1.0 if a credit was available, otherwise
+        overflow_latency_multiplier. This never blocks and never drops --
+        it only affects simulated latency."""
+        self._refill(now)
+        if self.credits >= 1.0:
+            self.credits -= 1.0
+            return 1.0
+        return self.overflow_latency_multiplier
+
+    def rebase(self, observed_rate_per_day: float) -> None:
+        """Call periodically (e.g. once per simulated day) with the
+        trailing multi-day average alert rate. Grows or shrinks max_credits
+        and refill_per_s proportionally, clamped to [credits_floor,
+        credits_ceiling]."""
+        self.baseline_rate_per_day = observed_rate_per_day
+        self.max_credits = int(
+            np.clip(round(observed_rate_per_day * 0.5), self.credits_floor, self.credits_ceiling)
+        )
+        self.refill_per_s = self.max_credits / (24 * 3600.0)
+
+
 class MqttSink:
     """In-memory stand-in for the MQTT broker; records every publish."""
 
@@ -108,6 +170,12 @@ class PriorityGateway:
         self.duplicates = 0
         self.parse_failures = 0
         self.stats = {"priority": 0, "normal": 0, "delivered": 0, "dropped": 0}
+        self.llq = LLQState(
+            credits_floor=self.cfg.llq_max_credits_floor,
+            credits_ceiling=self.cfg.llq_max_credits_ceiling,
+            overflow_latency_multiplier=self.cfg.llq_overflow_latency_multiplier,
+        )
+        self.beacon_seen: Dict[int, float] = {}  # sequence_number -> time seen, for orphan detection
 
     # -- rules --------------------------------------------------------------
 
@@ -124,9 +192,20 @@ class PriorityGateway:
 
     # -- ingest -------------------------------------------------------------
 
-    def handle_uplink(self, raw: bytes, source_node: str = "S1", now: Optional[float] = None) -> Dict:
-        """Process one LoRa uplink packet."""
+    def handle_uplink(
+        self,
+        raw: bytes,
+        source_node: str = "S1",
+        now: Optional[float] = None,
+        kind: str = "payload",
+    ) -> Dict:
+        """Process one LoRa uplink packet. kind is "payload" (default,
+        matches pre-Phase-1 behavior exactly) or "beacon" (new architecture
+        -- see handle_beacon_uplink for the beacon-specific path, which this
+        method delegates to)."""
         now = time.time() if now is None else now
+        if kind == "beacon":
+            return self.handle_beacon_uplink(raw, source_node, now)
 
         try:
             alert = parse_alert_message(raw, self.key)
@@ -171,6 +250,48 @@ class PriorityGateway:
             {"node": node_id, "sequence": alert.sequence_number, "timestamp": now}
         )
 
+    def handle_beacon_uplink(self, raw: bytes, source_node: str, now: float) -> Dict:
+        """Process one 16-byte beacon packet (Phase 1/3, new architecture).
+
+        mac_key is self.key -- the same key material used to decrypt the
+        paired full AlertPayload, per arch6_beacon.py's module docstring.
+        """
+        beacon = decode_beacon(raw, self.key)
+        if beacon is None:
+            self.parse_failures += 1
+            return {"accepted": False, "reason": "beacon_parse_error"}
+
+        self.beacon_seen[beacon.sequence_number] = now
+        record = PublishRecord(
+            topic=self.cfg.beacon_topic,
+            payload=raw,
+            qos=self.cfg.beacon_qos,
+            dscp=self.cfg.priority_dscp,
+            latency_ms=0.0,
+            attempts=1,
+            delivered=True,
+            timestamp=now,
+        )
+        self.sink.publish(record)
+        return {"accepted": True, "beacon": beacon, "publish": record}
+
+    def check_orphaned_beacons(self, now: float) -> List[Dict]:
+        """Call periodically. Returns a degraded-alert dict for every beacon
+        whose paired full payload has not arrived within
+        cfg.beacon_orphan_timeout_s -- something happened, forensic detail
+        is missing, but the event must not be silently dropped."""
+        orphaned = []
+        for sequence, seen_at in list(self.beacon_seen.items()):
+            if sequence in self.seen:
+                del self.beacon_seen[sequence]  # matched -- not orphaned
+                continue
+            if now - seen_at >= self.cfg.beacon_orphan_timeout_s:
+                orphaned.append(
+                    {"sequence": sequence, "beacon_seen_at": seen_at, "degraded": True}
+                )
+                del self.beacon_seen[sequence]
+        return orphaned
+
     # -- egress -------------------------------------------------------------
 
     def _forward(self, raw: bytes, priority: bool, now: float) -> PublishRecord:
@@ -185,9 +306,11 @@ class PriorityGateway:
         delivered = False
         max_attempts = len(self.cfg.backoff_schedule_s) if priority else 1
 
+        llq_multiplier = self.llq.consume(now) if priority else 1.0
+
         while attempts < max_attempts:
             ok, latency = self.backhaul.send(priority)
-            total_latency += latency
+            total_latency += latency * llq_multiplier
             attempts += 1
             if ok:
                 delivered = True
@@ -253,4 +376,7 @@ class PriorityGateway:
             "parse_failures": self.parse_failures,
             "queued": len(self.store),
             "counters": dict(self.stats),
+            "llq_max_credits": self.llq.max_credits,
+            "llq_current_credits": round(self.llq.credits, 2),
+            "llq_baseline_rate_per_day": self.llq.baseline_rate_per_day,
         }
