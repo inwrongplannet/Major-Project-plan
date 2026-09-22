@@ -43,6 +43,7 @@ from .arch8_network import (
     simulate_message_delivery,
 )
 from .config import (
+    CLASS_MAP,
     CLASS_NAMES,
     SCENARIOS,
     AudioConfig,
@@ -50,7 +51,7 @@ from .config import (
     SpikeConfig,
 )
 from .gateway import BackhaulLink, MqttSink, PriorityGateway
-from .synth import SynthSample, build_corpus
+from .synth import SynthSample, build_corpus, synthesize
 
 __all__ = [
     "PipelinePreset",
@@ -64,7 +65,7 @@ __all__ = [
     "run_full_pipeline",
 ]
 
-TRAIN_CLASSES = (0, 1, 2)  # ARCH_4/ARCH_5 head; "ambient" is a held-out negative
+TRAIN_CLASSES = (0, 1, 2, 3)  # ARCH_4/ARCH_5 head now trains on all 4 classes -- ambient included, not held out
 
 
 # ---------------------------------------------------------------------------
@@ -227,8 +228,7 @@ def run_dataset_stage(
         verbose=verbose,
     )
 
-    # The trained head covers 3 classes; ambient clips are kept aside as
-    # negatives for the false-alert measurement in the alert stage.
+    # All 4 classes (including ambient) are now trained; nothing is held out.
     keep = np.isin(encoded["labels"], TRAIN_CLASSES)
     ambient_idx = np.flatnonzero(~keep)
 
@@ -503,16 +503,40 @@ def run_alert_stage(
         events.append(record)
 
     # Ambient false-alert rate: clips with no threat present at all.
+    # Ambient is now a trained class (TRAIN_CLASSES includes it), so
+    # ambient_path/ambient_negatives.npz no longer exists -- measure this
+    # directly from the true-ambient rows already present in the held-out
+    # test split instead, which is a properly stratified sample rather than
+    # "whatever didn't make it into training."
+    ambient_class_id = CLASS_MAP["ambient"]
+    ambient_test_idx = np.flatnonzero(test_labels == ambient_class_id)
+    ambient_n = min(len(ambient_test_idx), 40)
     ambient_alerts = 0
-    ambient_n = 0
-    if ambient_path and Path(ambient_path).exists():
-        blob = np.load(Path(ambient_path))
-        ambient_spikes = blob["spikes"]
-        ambient_n = min(len(ambient_spikes), 40)
-        for i in range(ambient_n):
-            engine.reset()
-            res = engine.process_spikes(ambient_spikes[i], use_temporal_filter=False)
-            ambient_alerts += int(res["alert"])
+    for idx in ambient_test_idx[:ambient_n]:
+        engine.reset()
+        res = engine.process_spikes(test_spikes[idx], use_temporal_filter=False)
+        ambient_alerts += int(res["alert"])
+
+    # OOD check: freshly synthesized ambient clips the model has never seen in
+    # any split (train, val, or test).  This answers "did it learn the concept,
+    # or memorize the clips?" -- a model that only memorized would fail here even
+    # if the in-distribution rate looks good.
+    ood_rng = np.random.default_rng(9999)
+    ood_n = min(ambient_n, 20) if ambient_n else 20
+    ood_alerts = 0
+    for _ in range(ood_n):
+        forest_choice = str(ood_rng.choice(list(SCENARIOS.keys())))
+        ood_audio = synthesize(
+            ambient_class_id, forest_choice, preset.duration_s, base_cfg.audio.sample_rate, ood_rng
+        )
+        mel = extract_mel_spectrogram(ood_audio, base_cfg.audio, n_frames=preset.n_frames)
+        ood_spikes = convert_mel_to_spikes(
+            mel, base_cfg.spikes, db_floor=base_cfg.audio.db_floor,
+            gain=(model.metadata or {}).get("spike_gain"),
+        )["spikes"]
+        engine.reset()
+        res = engine.process_spikes(ood_spikes, use_temporal_filter=False)
+        ood_alerts += int(res["alert"])
 
     has_latency = bool(e2e_latencies)
     lat = np.array(e2e_latencies) if has_latency else np.array([float("nan")])
@@ -534,6 +558,9 @@ def run_alert_stage(
         "ambient_clips": ambient_n,
         "ambient_false_alerts": ambient_alerts,
         "ambient_false_alert_rate": ambient_alerts / ambient_n if ambient_n else None,
+        "ambient_ood_clips": ood_n,
+        "ambient_ood_false_alerts": ood_alerts,
+        "ambient_ood_false_alert_rate": ood_alerts / ood_n if ood_n else None,
         "time_on_air_ms": {
             sf: round(phy.time_on_air_ms(payload_sizes[0] if payload_sizes else 132, sf), 1)
             for sf in range(7, 13)
@@ -562,6 +589,7 @@ def run_alert_stage(
             print(
                 f"[QA] ambient false-alert rate "
                 f"{summary['ambient_false_alert_rate']:.1%} over {ambient_n} clips"
+                f" | OOD {summary['ambient_ood_false_alert_rate']:.1%} over {ood_n} unseen clips"
             )
 
     (out_dir / "alert_events.json").write_text(json.dumps(events, indent=2, default=str))
@@ -750,6 +778,13 @@ def acceptance_summary(stage1: Dict, stage2: Dict, stage3: Dict, stage4: Dict) -
             else "n/a (no alert crossed the threshold)",
             "<1500 ms",
             stage3["meets_latency_target"],
+        ),
+        "ambient_false_alert_rate": entry(
+            f"{stage3['ambient_false_alert_rate']:.1%}"
+            if stage3.get("ambient_false_alert_rate") is not None
+            else "n/a",
+            "<10%",
+            (stage3["ambient_false_alert_rate"] if stage3.get("ambient_false_alert_rate") is not None else 1.0) < 0.10,
         ),
         "network_delivery_rate": entry(
             f"{worst_delivery:.1%} (worst forest)", ">95%", worst_delivery >= 0.95

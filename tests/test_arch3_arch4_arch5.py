@@ -159,10 +159,10 @@ def test_network_shapes_match_spec():
     m = SpikingNetwork(SNNConfig())
     assert m.params["W1"].shape == (64, 128)
     assert m.params["W2"].shape == (128, 64)
-    assert m.params["W3"].shape == (64, 3)
+    assert m.params["W3"].shape == (64, 4)
     assert m.params["b1"].shape == (128,)
-    # 64*128 + 128 + 128*64 + 64 + 64*3 + 3 = 16,579 with the ARCH_4 layer sizes
-    assert m.n_parameters == 64 * 128 + 128 + 128 * 64 + 64 + 64 * 3 + 3
+    # 64*128 + 128 + 128*64 + 64 + 64*4 + 4 = 16,836 with the ARCH_4 layer sizes
+    assert m.n_parameters == 64 * 128 + 128 + 128 * 64 + 64 + 64 * 4 + 4
 
 
 def test_alpha_matches_documented_value():
@@ -175,7 +175,7 @@ def test_forward_accepts_all_documented_shapes():
     for shape in [(T, 64), (T, 64, 1), (4, T, 64), (4, T, 64, 1)]:
         x = np.zeros(shape, dtype=np.float32)
         logits = m.forward(x)["logits"]
-        assert logits.shape[1] == 3
+        assert logits.shape[1] == 4
 
 
 def test_softmax_sums_to_one():
@@ -298,8 +298,8 @@ def test_evaluate_reports_per_class_metrics(toy_dataset):
     spikes, labels, _ = toy_dataset
     m = SpikingNetwork(SNNConfig())
     result = evaluate(m, spikes[:12], labels[:12])
-    assert set(result["per_class"]) == {"gunshot", "chainsaw", "vehicle"}
-    assert result["confusion"].shape == (3, 3)
+    assert set(result["per_class"]) == {"gunshot", "chainsaw", "vehicle", "ambient"}
+    assert result["confusion"].shape == (4, 4)
 
 
 # --- ARCH_5 -----------------------------------------------------------------
@@ -341,7 +341,7 @@ def test_alert_rate_limiting():
     m = SpikingNetwork(SNNConfig())
     engine = EcoSentryInference(m, infer_cfg=InferenceConfig(min_alert_interval_s=10.0))
     # Force a confident gunshot readout.
-    m.params["b3"] = np.array([12.0, 0.0, 0.0], dtype=np.float32)
+    m.params["b3"] = np.array([12.0, 0.0, 0.0, 0.0], dtype=np.float32)
     spikes = np.zeros((20, 64, 1), dtype=np.float32)
 
     first = engine.process_spikes(spikes, timestamp=1_000.0, use_temporal_filter=False)

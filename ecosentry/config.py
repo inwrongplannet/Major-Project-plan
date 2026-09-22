@@ -159,7 +159,7 @@ class SNNConfig:
     n_input: int = 64
     n_hidden1: int = 128
     n_hidden2: int = 64
-    n_classes: int = 3
+    n_classes: int = 4
     v_threshold: float = 1.0
     tau_m_s: float = 10e-3
     dt_ms: float = 10.0
