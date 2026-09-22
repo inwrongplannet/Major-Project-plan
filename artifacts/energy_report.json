@@ -1,0 +1,900 @@
+{
+  "corbett": {
+    "scenario": "Corbett National Park",
+    "scenario_key": "corbett",
+    "battery_capacity_wh": 18.5,
+    "average_power_mw": 50.043,
+    "energy_breakdown_mj_per_day": {
+      "quiescent": 4320000.0,
+      "audio": 28.8,
+      "spike_conversion": 2.16,
+      "snn_inference": 3456.0,
+      "encryption": 0.2,
+      "beacon_transmission": 36.019,
+      "payload_transmission": 246.4
+    },
+    "daily_consumption_wh": 1.201,
+    "daily_harvest_wh": 1.221,
+    "daily_net_wh": 0.02,
+    "energy_per_alert_mj": 73.535,
+    "energy_per_detection_mj": 24.215,
+    "operational_days_with_solar": 30,
+    "operational_days_battery_only": 16,
+    "final_soc_percent": 97.4,
+    "min_soc_percent": 95.7,
+    "survived_mission": true,
+    "power_reduction": {
+      "rows": {
+        "listening": {
+          "cnn_mw": 200.0,
+          "snn_mw": 50.0,
+          "reduction_x": 4.0
+        },
+        "audio_processing": {
+          "cnn_mw": 150.0,
+          "snn_mw": 2.0,
+          "reduction_x": 75.0
+        },
+        "inference": {
+          "cnn_mw": 250.0,
+          "snn_mw": 30.0,
+          "reduction_x": 8.3
+        }
+      },
+      "cnn_total_mw": 600.0,
+      "snn_active_mw": 33.0,
+      "snn_average_mw": 50.043,
+      "reduction_vs_cnn_active_x": 18.2,
+      "reduction_vs_cnn_average_x": 12.0
+    },
+    "recommendations": [
+      "Solar barely covers consumption -- add margin (larger panel or MPPT).",
+      "Battery-only endurance is 16 days; solar harvesting is mandatory for a 30-day deployment."
+    ],
+    "soc_trajectory_solar": [
+      98.4,
+      97.95,
+      98.39,
+      98.35,
+      98.39,
+      97.52,
+      95.68,
+      96.65,
+      98.12,
+      96.61,
+      98.08,
+      98.37,
+      98.41,
+      98.44,
+      98.43,
+      98.38,
+      98.39,
+      98.41,
+      97.4,
+      98.41,
+      98.39,
+      98.44,
+      98.43,
+      97.81,
+      97.87,
+      98.42,
+      98.41,
+      98.37,
+      98.37,
+      97.43
+    ],
+    "soc_trajectory_battery_only": [
+      93.51,
+      87.02,
+      80.52,
+      74.03,
+      67.54,
+      61.05,
+      54.56,
+      48.06,
+      41.57,
+      35.08,
+      28.59,
+      22.1,
+      15.6,
+      9.11,
+      2.62,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "daily_series": [
+      {
+        "day": 1,
+        "harvest_wh": 1.444,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 2,
+        "harvest_wh": 1.117,
+        "consumption_wh": 1.201,
+        "end_soc": 97.9
+      },
+      {
+        "day": 3,
+        "harvest_wh": 1.362,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 4,
+        "harvest_wh": 1.196,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 5,
+        "harvest_wh": 1.409,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 6,
+        "harvest_wh": 1.04,
+        "consumption_wh": 1.201,
+        "end_soc": 97.5
+      },
+      {
+        "day": 7,
+        "harvest_wh": 0.859,
+        "consumption_wh": 1.201,
+        "end_soc": 95.7
+      },
+      {
+        "day": 8,
+        "harvest_wh": 1.382,
+        "consumption_wh": 1.201,
+        "end_soc": 96.7
+      },
+      {
+        "day": 9,
+        "harvest_wh": 1.472,
+        "consumption_wh": 1.201,
+        "end_soc": 98.1
+      },
+      {
+        "day": 10,
+        "harvest_wh": 0.922,
+        "consumption_wh": 1.201,
+        "end_soc": 96.6
+      },
+      {
+        "day": 11,
+        "harvest_wh": 1.473,
+        "consumption_wh": 1.201,
+        "end_soc": 98.1
+      },
+      {
+        "day": 12,
+        "harvest_wh": 1.271,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 13,
+        "harvest_wh": 1.465,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 14,
+        "harvest_wh": 1.653,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 15,
+        "harvest_wh": 1.592,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 16,
+        "harvest_wh": 1.349,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 17,
+        "harvest_wh": 1.366,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 18,
+        "harvest_wh": 1.507,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 19,
+        "harvest_wh": 1.014,
+        "consumption_wh": 1.201,
+        "end_soc": 97.4
+      },
+      {
+        "day": 20,
+        "harvest_wh": 1.481,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 21,
+        "harvest_wh": 1.374,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 22,
+        "harvest_wh": 1.622,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 23,
+        "harvest_wh": 1.592,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 24,
+        "harvest_wh": 1.086,
+        "consumption_wh": 1.201,
+        "end_soc": 97.8
+      },
+      {
+        "day": 25,
+        "harvest_wh": 1.213,
+        "consumption_wh": 1.201,
+        "end_soc": 97.9
+      },
+      {
+        "day": 26,
+        "harvest_wh": 1.509,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 27,
+        "harvest_wh": 1.505,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 28,
+        "harvest_wh": 1.282,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 29,
+        "harvest_wh": 1.29,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 30,
+        "harvest_wh": 1.027,
+        "consumption_wh": 1.201,
+        "end_soc": 97.4
+      }
+    ]
+  },
+  "seshachalam": {
+    "scenario": "Seshachalam Hills",
+    "scenario_key": "seshachalam",
+    "battery_capacity_wh": 18.5,
+    "average_power_mw": 50.042,
+    "energy_breakdown_mj_per_day": {
+      "quiescent": 4320000.0,
+      "audio": 28.8,
+      "spike_conversion": 2.16,
+      "snn_inference": 3456.0,
+      "encryption": 0.12,
+      "beacon_transmission": 21.612,
+      "payload_transmission": 147.84
+    },
+    "daily_consumption_wh": 1.201,
+    "daily_harvest_wh": 1.099,
+    "daily_net_wh": -0.102,
+    "energy_per_alert_mj": 73.535,
+    "energy_per_detection_mj": 24.215,
+    "operational_days_with_solar": 30,
+    "operational_days_battery_only": 16,
+    "final_soc_percent": 86.9,
+    "min_soc_percent": 85.5,
+    "survived_mission": true,
+    "power_reduction": {
+      "rows": {
+        "listening": {
+          "cnn_mw": 200.0,
+          "snn_mw": 50.0,
+          "reduction_x": 4.0
+        },
+        "audio_processing": {
+          "cnn_mw": 150.0,
+          "snn_mw": 2.0,
+          "reduction_x": 75.0
+        },
+        "inference": {
+          "cnn_mw": 250.0,
+          "snn_mw": 30.0,
+          "reduction_x": 8.3
+        }
+      },
+      "cnn_total_mw": 600.0,
+      "snn_active_mw": 33.0,
+      "snn_average_mw": 50.043,
+      "reduction_vs_cnn_active_x": 18.2,
+      "reduction_vs_cnn_average_x": 12.0
+    },
+    "recommendations": [
+      "Daily deficit: add a second battery or a larger panel, or duty-cycle listening.",
+      "Battery-only endurance is 16 days; solar harvesting is mandatory for a 30-day deployment."
+    ],
+    "soc_trajectory_solar": [
+      98.37,
+      96.46,
+      96.74,
+      97.35,
+      96.63,
+      95.52,
+      96.69,
+      94.7,
+      95.94,
+      95.13,
+      95.04,
+      93.13,
+      92.83,
+      92.5,
+      91.58,
+      90.13,
+      90.69,
+      88.76,
+      88.9,
+      88.95,
+      87.29,
+      86.29,
+      85.71,
+      86.89,
+      87.84,
+      87.91,
+      86.56,
+      85.54,
+      86.39,
+      86.92
+    ],
+    "soc_trajectory_battery_only": [
+      93.51,
+      87.02,
+      80.52,
+      74.03,
+      67.54,
+      61.05,
+      54.56,
+      48.06,
+      41.57,
+      35.08,
+      28.59,
+      22.1,
+      15.61,
+      9.11,
+      2.62,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "daily_series": [
+      {
+        "day": 1,
+        "harvest_wh": 1.299,
+        "consumption_wh": 1.201,
+        "end_soc": 98.4
+      },
+      {
+        "day": 2,
+        "harvest_wh": 0.847,
+        "consumption_wh": 1.201,
+        "end_soc": 96.5
+      },
+      {
+        "day": 3,
+        "harvest_wh": 1.253,
+        "consumption_wh": 1.201,
+        "end_soc": 96.7
+      },
+      {
+        "day": 4,
+        "harvest_wh": 1.313,
+        "consumption_wh": 1.201,
+        "end_soc": 97.3
+      },
+      {
+        "day": 5,
+        "harvest_wh": 1.069,
+        "consumption_wh": 1.201,
+        "end_soc": 96.6
+      },
+      {
+        "day": 6,
+        "harvest_wh": 0.995,
+        "consumption_wh": 1.201,
+        "end_soc": 95.5
+      },
+      {
+        "day": 7,
+        "harvest_wh": 1.418,
+        "consumption_wh": 1.201,
+        "end_soc": 96.7
+      },
+      {
+        "day": 8,
+        "harvest_wh": 0.832,
+        "consumption_wh": 1.201,
+        "end_soc": 94.7
+      },
+      {
+        "day": 9,
+        "harvest_wh": 1.431,
+        "consumption_wh": 1.201,
+        "end_soc": 95.9
+      },
+      {
+        "day": 10,
+        "harvest_wh": 1.051,
+        "consumption_wh": 1.201,
+        "end_soc": 95.1
+      },
+      {
+        "day": 11,
+        "harvest_wh": 1.185,
+        "consumption_wh": 1.201,
+        "end_soc": 95.0
+      },
+      {
+        "day": 12,
+        "harvest_wh": 0.847,
+        "consumption_wh": 1.201,
+        "end_soc": 93.1
+      },
+      {
+        "day": 13,
+        "harvest_wh": 1.146,
+        "consumption_wh": 1.201,
+        "end_soc": 92.8
+      },
+      {
+        "day": 14,
+        "harvest_wh": 1.14,
+        "consumption_wh": 1.201,
+        "end_soc": 92.5
+      },
+      {
+        "day": 15,
+        "harvest_wh": 1.032,
+        "consumption_wh": 1.201,
+        "end_soc": 91.6
+      },
+      {
+        "day": 16,
+        "harvest_wh": 0.932,
+        "consumption_wh": 1.201,
+        "end_soc": 90.1
+      },
+      {
+        "day": 17,
+        "harvest_wh": 1.305,
+        "consumption_wh": 1.201,
+        "end_soc": 90.7
+      },
+      {
+        "day": 18,
+        "harvest_wh": 0.843,
+        "consumption_wh": 1.201,
+        "end_soc": 88.8
+      },
+      {
+        "day": 19,
+        "harvest_wh": 1.227,
+        "consumption_wh": 1.201,
+        "end_soc": 88.9
+      },
+      {
+        "day": 20,
+        "harvest_wh": 1.21,
+        "consumption_wh": 1.201,
+        "end_soc": 88.9
+      },
+      {
+        "day": 21,
+        "harvest_wh": 0.894,
+        "consumption_wh": 1.201,
+        "end_soc": 87.3
+      },
+      {
+        "day": 22,
+        "harvest_wh": 1.017,
+        "consumption_wh": 1.201,
+        "end_soc": 86.3
+      },
+      {
+        "day": 23,
+        "harvest_wh": 1.094,
+        "consumption_wh": 1.201,
+        "end_soc": 85.7
+      },
+      {
+        "day": 24,
+        "harvest_wh": 1.419,
+        "consumption_wh": 1.201,
+        "end_soc": 86.9
+      },
+      {
+        "day": 25,
+        "harvest_wh": 1.377,
+        "consumption_wh": 1.201,
+        "end_soc": 87.8
+      },
+      {
+        "day": 26,
+        "harvest_wh": 1.214,
+        "consumption_wh": 1.201,
+        "end_soc": 87.9
+      },
+      {
+        "day": 27,
+        "harvest_wh": 0.952,
+        "consumption_wh": 1.201,
+        "end_soc": 86.6
+      },
+      {
+        "day": 28,
+        "harvest_wh": 1.012,
+        "consumption_wh": 1.201,
+        "end_soc": 85.5
+      },
+      {
+        "day": 29,
+        "harvest_wh": 1.359,
+        "consumption_wh": 1.201,
+        "end_soc": 86.4
+      },
+      {
+        "day": 30,
+        "harvest_wh": 1.299,
+        "consumption_wh": 1.201,
+        "end_soc": 86.9
+      }
+    ]
+  },
+  "sundarbans": {
+    "scenario": "Sundarbans Wetlands",
+    "scenario_key": "sundarbans",
+    "battery_capacity_wh": 18.5,
+    "average_power_mw": 50.045,
+    "energy_breakdown_mj_per_day": {
+      "quiescent": 4320000.0,
+      "audio": 28.8,
+      "spike_conversion": 2.16,
+      "snn_inference": 3456.0,
+      "encryption": 0.32,
+      "beacon_transmission": 57.631,
+      "payload_transmission": 394.24
+    },
+    "daily_consumption_wh": 1.201,
+    "daily_harvest_wh": 0.915,
+    "daily_net_wh": -0.286,
+    "energy_per_alert_mj": 73.535,
+    "energy_per_detection_mj": 24.215,
+    "operational_days_with_solar": 30,
+    "operational_days_battery_only": 16,
+    "final_soc_percent": 56.7,
+    "min_soc_percent": 56.7,
+    "survived_mission": true,
+    "power_reduction": {
+      "rows": {
+        "listening": {
+          "cnn_mw": 200.0,
+          "snn_mw": 50.0,
+          "reduction_x": 4.0
+        },
+        "audio_processing": {
+          "cnn_mw": 150.0,
+          "snn_mw": 2.0,
+          "reduction_x": 75.0
+        },
+        "inference": {
+          "cnn_mw": 250.0,
+          "snn_mw": 30.0,
+          "reduction_x": 8.3
+        }
+      },
+      "cnn_total_mw": 600.0,
+      "snn_active_mw": 33.0,
+      "snn_average_mw": 50.043,
+      "reduction_vs_cnn_active_x": 18.2,
+      "reduction_vs_cnn_average_x": 12.0
+    },
+    "recommendations": [
+      "Daily deficit: add a second battery or a larger panel, or duty-cycle listening.",
+      "High false-positive rate inflates transmission energy -- raise the confidence threshold or add temporal debouncing.",
+      "Battery-only endurance is 16 days; solar harvesting is mandatory for a 30-day deployment."
+    ],
+    "soc_trajectory_solar": [
+      98.33,
+      95.57,
+      94.24,
+      93.15,
+      90.46,
+      89.72,
+      88.56,
+      85.76,
+      83.09,
+      83.04,
+      82.61,
+      82.61,
+      79.52,
+      79.23,
+      78.31,
+      77.4,
+      75.54,
+      74.11,
+      72.07,
+      71.71,
+      68.92,
+      68.38,
+      66.86,
+      64.58,
+      64.26,
+      61.38,
+      59.94,
+      59.26,
+      58.09,
+      56.75
+    ],
+    "soc_trajectory_battery_only": [
+      93.51,
+      87.02,
+      80.52,
+      74.03,
+      67.54,
+      61.05,
+      54.55,
+      48.06,
+      41.57,
+      35.08,
+      28.58,
+      22.09,
+      15.6,
+      9.11,
+      2.62,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "daily_series": [
+      {
+        "day": 1,
+        "harvest_wh": 1.083,
+        "consumption_wh": 1.201,
+        "end_soc": 98.3
+      },
+      {
+        "day": 2,
+        "harvest_wh": 0.691,
+        "consumption_wh": 1.201,
+        "end_soc": 95.6
+      },
+      {
+        "day": 3,
+        "harvest_wh": 0.955,
+        "consumption_wh": 1.201,
+        "end_soc": 94.2
+      },
+      {
+        "day": 4,
+        "harvest_wh": 1.0,
+        "consumption_wh": 1.201,
+        "end_soc": 93.2
+      },
+      {
+        "day": 5,
+        "harvest_wh": 0.703,
+        "consumption_wh": 1.201,
+        "end_soc": 90.5
+      },
+      {
+        "day": 6,
+        "harvest_wh": 1.063,
+        "consumption_wh": 1.201,
+        "end_soc": 89.7
+      },
+      {
+        "day": 7,
+        "harvest_wh": 0.986,
+        "consumption_wh": 1.201,
+        "end_soc": 88.6
+      },
+      {
+        "day": 8,
+        "harvest_wh": 0.683,
+        "consumption_wh": 1.201,
+        "end_soc": 85.8
+      },
+      {
+        "day": 9,
+        "harvest_wh": 0.708,
+        "consumption_wh": 1.201,
+        "end_soc": 83.1
+      },
+      {
+        "day": 10,
+        "harvest_wh": 1.193,
+        "consumption_wh": 1.201,
+        "end_soc": 83.0
+      },
+      {
+        "day": 11,
+        "harvest_wh": 1.12,
+        "consumption_wh": 1.201,
+        "end_soc": 82.6
+      },
+      {
+        "day": 12,
+        "harvest_wh": 1.201,
+        "consumption_wh": 1.201,
+        "end_soc": 82.6
+      },
+      {
+        "day": 13,
+        "harvest_wh": 0.631,
+        "consumption_wh": 1.201,
+        "end_soc": 79.5
+      },
+      {
+        "day": 14,
+        "harvest_wh": 1.147,
+        "consumption_wh": 1.201,
+        "end_soc": 79.2
+      },
+      {
+        "day": 15,
+        "harvest_wh": 1.031,
+        "consumption_wh": 1.201,
+        "end_soc": 78.3
+      },
+      {
+        "day": 16,
+        "harvest_wh": 1.034,
+        "consumption_wh": 1.201,
+        "end_soc": 77.4
+      },
+      {
+        "day": 17,
+        "harvest_wh": 0.856,
+        "consumption_wh": 1.201,
+        "end_soc": 75.5
+      },
+      {
+        "day": 18,
+        "harvest_wh": 0.938,
+        "consumption_wh": 1.201,
+        "end_soc": 74.1
+      },
+      {
+        "day": 19,
+        "harvest_wh": 0.822,
+        "consumption_wh": 1.201,
+        "end_soc": 72.1
+      },
+      {
+        "day": 20,
+        "harvest_wh": 1.135,
+        "consumption_wh": 1.201,
+        "end_soc": 71.7
+      },
+      {
+        "day": 21,
+        "harvest_wh": 0.684,
+        "consumption_wh": 1.201,
+        "end_soc": 68.9
+      },
+      {
+        "day": 22,
+        "harvest_wh": 1.101,
+        "consumption_wh": 1.201,
+        "end_soc": 68.4
+      },
+      {
+        "day": 23,
+        "harvest_wh": 0.921,
+        "consumption_wh": 1.201,
+        "end_soc": 66.9
+      },
+      {
+        "day": 24,
+        "harvest_wh": 0.779,
+        "consumption_wh": 1.201,
+        "end_soc": 64.6
+      },
+      {
+        "day": 25,
+        "harvest_wh": 1.142,
+        "consumption_wh": 1.201,
+        "end_soc": 64.3
+      },
+      {
+        "day": 26,
+        "harvest_wh": 0.668,
+        "consumption_wh": 1.201,
+        "end_soc": 61.4
+      },
+      {
+        "day": 27,
+        "harvest_wh": 0.936,
+        "consumption_wh": 1.201,
+        "end_soc": 59.9
+      },
+      {
+        "day": 28,
+        "harvest_wh": 1.074,
+        "consumption_wh": 1.201,
+        "end_soc": 59.3
+      },
+      {
+        "day": 29,
+        "harvest_wh": 0.985,
+        "consumption_wh": 1.201,
+        "end_soc": 58.1
+      },
+      {
+        "day": 30,
+        "harvest_wh": 0.953,
+        "consumption_wh": 1.201,
+        "end_soc": 56.7
+      }
+    ]
+  }
+}

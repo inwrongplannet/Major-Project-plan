@@ -137,5 +137,7 @@ Thumbs.db
 Resources/
 
 # Eco-Sentry run outputs
-artifacts/
+# artifacts/
+*.npz
+*.h5
 samples/

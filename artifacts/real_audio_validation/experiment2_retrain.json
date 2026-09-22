@@ -1,0 +1,102 @@
+{
+  "experiment": "retrain_with_real_mixed_in",
+  "n_synthetic": 600,
+  "n_real": 480,
+  "real_category_counts": {
+    "chirping_birds": 40,
+    "thunderstorm": 40,
+    "chainsaw": 40,
+    "airplane": 40,
+    "train": 40,
+    "wind": 40,
+    "car_horn": 40,
+    "crackling_fire": 40,
+    "helicopter": 40,
+    "rain": 40,
+    "engine": 40,
+    "crickets": 40
+  },
+  "epochs": 120,
+  "test_accuracy_combined": 0.7731481481481481,
+  "test_confusion_matrix": [
+    [
+      51,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      30,
+      2,
+      7
+    ],
+    [
+      2,
+      3,
+      53,
+      9
+    ],
+    [
+      8,
+      2,
+      16,
+      33
+    ]
+  ],
+  "test_per_class": {
+    "gunshot": {
+      "precision": 0.8361,
+      "recall": 1.0,
+      "f1": 0.9107,
+      "support": 51
+    },
+    "chainsaw": {
+      "precision": 0.8571,
+      "recall": 0.7692,
+      "f1": 0.8108,
+      "support": 39
+    },
+    "vehicle": {
+      "precision": 0.7465,
+      "recall": 0.791,
+      "f1": 0.7681,
+      "support": 67
+    },
+    "ambient": {
+      "precision": 0.6735,
+      "recall": 0.5593,
+      "f1": 0.6111,
+      "support": 59
+    }
+  },
+  "val_accuracy": 0.7870370370370371,
+  "n_real_in_test_split": 146,
+  "test_accuracy_real_only": 0.678082191780822,
+  "test_confusion_matrix_real_only": [
+    [
+      28,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      7,
+      2,
+      7
+    ],
+    [
+      2,
+      2,
+      40,
+      9
+    ],
+    [
+      7,
+      2,
+      16,
+      24
+    ]
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "experiment": "zero_shot_synthetic_to_real",
+  "model_path": "artifacts/snn_model.npz",
+  "esc50_root": "/home/inwrongplannet/code/ESC-50",
+  "n_real_clips": 480,
+  "category_counts": {
+    "chirping_birds": 40,
+    "thunderstorm": 40,
+    "chainsaw": 40,
+    "airplane": 40,
+    "train": 40,
+    "wind": 40,
+    "car_horn": 40,
+    "crackling_fire": 40,
+    "helicopter": 40,
+    "rain": 40,
+    "engine": 40,
+    "crickets": 40
+  },
+  "classes_covered": [
+    "ambient",
+    "chainsaw",
+    "vehicle"
+  ],
+  "classes_not_covered": [
+    "gunshot"
+  ],
+  "note_on_gunshot": "ESC-50 has no gun_shot category. gunshot is not evaluated in this experiment and is absent from classes_covered by design, not by error.",
+  "argmax_accuracy": 0.15625,
+  "argmax_confusion_matrix": [
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      31,
+      5,
+      4
+    ],
+    [
+      28,
+      135,
+      23,
+      14
+    ],
+    [
+      102,
+      81,
+      36,
+      21
+    ]
+  ],
+  "argmax_per_class": {
+    "gunshot": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "chainsaw": {
+      "precision": 0.1255,
+      "recall": 0.775,
+      "f1": 0.216,
+      "support": 40
+    },
+    "vehicle": {
+      "precision": 0.3594,
+      "recall": 0.115,
+      "f1": 0.1742,
+      "support": 200
+    },
+    "ambient": {
+      "precision": 0.5385,
+      "recall": 0.0875,
+      "f1": 0.1505,
+      "support": 240
+    }
+  },
+  "alert_decision_by_true_class": {
+    "ambient": {
+      "n": 240,
+      "alerts": 45,
+      "alert_rate": 0.1875
+    },
+    "chainsaw": {
+      "n": 40,
+      "alerts": 17,
+      "alert_rate": 0.425
+    },
+    "vehicle": {
+      "n": 200,
+      "alerts": 68,
+      "alert_rate": 0.34
+    }
+  }
+}

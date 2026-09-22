@@ -1,0 +1,388 @@
+{
+  "corbett": {
+    "scenario": "corbett",
+    "topology": {
+      "scenario": "corbett",
+      "n_nodes": 6,
+      "n_sensors": 3,
+      "n_relays": 2,
+      "n_links": 7,
+      "mean_link_km": 3.337,
+      "max_link_km": 4.125
+    },
+    "connectivity": {
+      "connected": true,
+      "orphaned_sensors": [],
+      "routes": {
+        "S1": {
+          "path": [
+            "S1",
+            "BASE"
+          ],
+          "hops": 1,
+          "distance_km": 1.11
+        },
+        "S2": {
+          "path": [
+            "S2",
+            "R1",
+            "BASE"
+          ],
+          "hops": 2,
+          "distance_km": 8.25
+        },
+        "S3": {
+          "path": [
+            "S3",
+            "R2",
+            "BASE"
+          ],
+          "hops": 2,
+          "distance_km": 6.58
+        }
+      },
+      "max_hops": 2
+    },
+    "adaptive_sf_baseline": {
+      "scenario": "corbett",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 414.4313470830431,
+      "latency_std_ms": 132.37617907854144,
+      "latency_p50_ms": 476.1034033717613,
+      "latency_p95_ms": 544.5860400800512,
+      "latency_p99_ms": 581.9820681438084,
+      "latency_max_ms": 1153.7849551062702,
+      "avg_hop_count": 1.645,
+      "total_retries": 1,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "fixed_sf_baseline": {
+      "scenario": "corbett",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 8544.108749165525,
+      "latency_std_ms": 2402.9740743177586,
+      "latency_p50_ms": 10215.410132296147,
+      "latency_p95_ms": 10261.817269870488,
+      "latency_p99_ms": 10286.284498703657,
+      "latency_max_ms": 10300.019496871248,
+      "avg_hop_count": 1.67,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": false
+    },
+    "fixed_spreading_factor": 12,
+    "congestion": {
+      "scenario": "corbett",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 539.3653153210878,
+      "latency_std_ms": 196.2303928661406,
+      "latency_p50_ms": 545.2752007260019,
+      "latency_p95_ms": 863.3143284046694,
+      "latency_p99_ms": 1030.3853490236152,
+      "latency_max_ms": 1035.1415862909425,
+      "avg_hop_count": 1.65,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "interference": {
+      "scenario": "corbett",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 419.1545625065797,
+      "latency_std_ms": 121.34548038706004,
+      "latency_p50_ms": 480.4236100327789,
+      "latency_p95_ms": 546.7559602876153,
+      "latency_p99_ms": 576.1196249970019,
+      "latency_max_ms": 654.5321391815917,
+      "avg_hop_count": 1.675,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "time_on_air_ms": {
+      "7": 220.4,
+      "8": 389.6,
+      "9": 697.3,
+      "10": 1271.8,
+      "11": 2789.4,
+      "12": 5087.2
+    },
+    "recommendations": [
+      "All targets met; deploy the documented topology as-is."
+    ]
+  },
+  "seshachalam": {
+    "scenario": "seshachalam",
+    "topology": {
+      "scenario": "seshachalam",
+      "n_nodes": 4,
+      "n_sensors": 2,
+      "n_relays": 1,
+      "n_links": 6,
+      "mean_link_km": 4.139,
+      "max_link_km": 7.76
+    },
+    "connectivity": {
+      "connected": true,
+      "orphaned_sensors": [],
+      "routes": {
+        "S1": {
+          "path": [
+            "S1",
+            "BASE"
+          ],
+          "hops": 1,
+          "distance_km": 4.66
+        },
+        "S2": {
+          "path": [
+            "S2",
+            "BASE"
+          ],
+          "hops": 1,
+          "distance_km": 3.1
+        }
+      },
+      "max_hops": 1
+    },
+    "adaptive_sf_baseline": {
+      "scenario": "seshachalam",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 249.5992636958979,
+      "latency_std_ms": 18.40104351989561,
+      "latency_p50_ms": 243.27100970933947,
+      "latency_p95_ms": 280.6527540395949,
+      "latency_p99_ms": 316.083846344849,
+      "latency_max_ms": 339.04780896042934,
+      "avg_hop_count": 1.0,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "fixed_sf_baseline": {
+      "scenario": "seshachalam",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 728.1735324298336,
+      "latency_std_ms": 20.216574419389104,
+      "latency_p50_ms": 722.5222307603667,
+      "latency_p95_ms": 774.5884505827694,
+      "latency_p99_ms": 793.7491650801386,
+      "latency_max_ms": 798.7932622656582,
+      "avg_hop_count": 1.0,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "fixed_spreading_factor": 9,
+    "congestion": {
+      "scenario": "seshachalam",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 331.7221727045484,
+      "latency_std_ms": 102.92645911382792,
+      "latency_p50_ms": 295.4397423996773,
+      "latency_p95_ms": 520.3973583816609,
+      "latency_p99_ms": 640.863513816607,
+      "latency_max_ms": 1001.098764525234,
+      "avg_hop_count": 1.0,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "interference": {
+      "scenario": "seshachalam",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 249.2185601641766,
+      "latency_std_ms": 18.11266514011726,
+      "latency_p50_ms": 243.6347879318631,
+      "latency_p95_ms": 286.8004021317246,
+      "latency_p99_ms": 300.1635905853783,
+      "latency_max_ms": 355.5627823261899,
+      "avg_hop_count": 1.0,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "time_on_air_ms": {
+      "7": 220.4,
+      "8": 389.6,
+      "9": 697.3,
+      "10": 1271.8,
+      "11": 2789.4,
+      "12": 5087.2
+    },
+    "recommendations": [
+      "All targets met; deploy the documented topology as-is."
+    ]
+  },
+  "sundarbans": {
+    "scenario": "sundarbans",
+    "topology": {
+      "scenario": "sundarbans",
+      "n_nodes": 8,
+      "n_sensors": 4,
+      "n_relays": 3,
+      "n_links": 11,
+      "mean_link_km": 3.979,
+      "max_link_km": 5.278
+    },
+    "connectivity": {
+      "connected": true,
+      "orphaned_sensors": [],
+      "routes": {
+        "S1": {
+          "path": [
+            "S1",
+            "BASE"
+          ],
+          "hops": 1,
+          "distance_km": 0.76
+        },
+        "S2": {
+          "path": [
+            "S2",
+            "R1",
+            "BASE"
+          ],
+          "hops": 2,
+          "distance_km": 6.83
+        },
+        "S3": {
+          "path": [
+            "S3",
+            "R2",
+            "BASE"
+          ],
+          "hops": 2,
+          "distance_km": 8.34
+        },
+        "S4": {
+          "path": [
+            "S4",
+            "R3",
+            "BASE"
+          ],
+          "hops": 2,
+          "distance_km": 10.21
+        }
+      },
+      "max_hops": 2
+    },
+    "adaptive_sf_baseline": {
+      "scenario": "sundarbans",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 444.1579294569196,
+      "latency_std_ms": 119.74155758062237,
+      "latency_p50_ms": 484.37907422543526,
+      "latency_p95_ms": 546.5371557307678,
+      "latency_p99_ms": 579.4914657989056,
+      "latency_max_ms": 1153.784973821775,
+      "avg_hop_count": 1.765,
+      "total_retries": 1,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "fixed_sf_baseline": {
+      "scenario": "sundarbans",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 2290.5416967871206,
+      "latency_std_ms": 556.5599398223954,
+      "latency_p50_ms": 2588.9825656407347,
+      "latency_p95_ms": 2645.7307695745412,
+      "latency_p99_ms": 2680.1652734906775,
+      "latency_max_ms": 2711.8310188475143,
+      "avg_hop_count": 1.76,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": false
+    },
+    "fixed_spreading_factor": 10,
+    "congestion": {
+      "scenario": "sundarbans",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 562.4326222286759,
+      "latency_std_ms": 181.78288669968586,
+      "latency_p50_ms": 577.5921410642275,
+      "latency_p95_ms": 840.6084002219186,
+      "latency_p99_ms": 947.5819052492476,
+      "latency_max_ms": 1073.2730417021428,
+      "avg_hop_count": 1.715,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "interference": {
+      "scenario": "sundarbans",
+      "messages": 200,
+      "delivered": 200,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 426.9453769627135,
+      "latency_std_ms": 114.78592062229467,
+      "latency_p50_ms": 482.9439474360306,
+      "latency_p95_ms": 538.6787591748626,
+      "latency_p99_ms": 566.9408757052682,
+      "latency_max_ms": 577.0292519934526,
+      "avg_hop_count": 1.71,
+      "total_retries": 0,
+      "packet_loss": 0.0,
+      "failures": [],
+      "meets_delivery_target": true,
+      "meets_latency_target": true
+    },
+    "time_on_air_ms": {
+      "7": 220.4,
+      "8": 389.6,
+      "9": 697.3,
+      "10": 1271.8,
+      "11": 2789.4,
+      "12": 5087.2
+    },
+    "recommendations": [
+      "All targets met; deploy the documented topology as-is."
+    ]
+  }
+}

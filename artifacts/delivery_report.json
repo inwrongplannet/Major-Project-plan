@@ -1,0 +1,45 @@
+{
+  "scenario": "corbett",
+  "messages_sent": 300,
+  "priority_dispatched": 96,
+  "officer_acked": 91,
+  "officer_ack_rate": 0.9479166666666666,
+  "officer_ack_latency_p95_s": 4176.43681878683,
+  "escalations_triggered": 16,
+  "unacknowledged": 0,
+  "gateway_metrics": {
+    "priority": {
+      "count": 96,
+      "delivery_rate": 1.0,
+      "latency_mean_ms": 296.44871778800194,
+      "latency_p95_ms": 367.5135230246524,
+      "latency_p99_ms": 377.82567698221663,
+      "mean_attempts": 1.0
+    },
+    "normal": {
+      "count": 204,
+      "delivery_rate": 0.9705882352941176,
+      "latency_mean_ms": 449.9599148429437,
+      "latency_p95_ms": 806.5821621268457,
+      "latency_p99_ms": 940.7236735587146,
+      "mean_attempts": 1.0
+    },
+    "priority_delivery_rate": 1.0,
+    "priority_latency_p95_ms": 367.5135230246524,
+    "priority_latency_p99_ms": 377.82567698221663,
+    "local_acks": 96,
+    "airtime_saved_transmissions": 192,
+    "duplicates_suppressed": 0,
+    "parse_failures": 0,
+    "queued": 6,
+    "counters": {
+      "priority": 96,
+      "normal": 204,
+      "delivered": 294,
+      "dropped": 6
+    },
+    "llq_max_credits": 3,
+    "llq_current_credits": 0.16,
+    "llq_baseline_rate_per_day": 5.0
+  }
+}
