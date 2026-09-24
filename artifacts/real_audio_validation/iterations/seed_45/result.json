@@ -1,0 +1,11 @@
+{
+  "seed": 45,
+  "n_synthetic": 600,
+  "n_esc50": 480,
+  "n_us8k": 360,
+  "n_us8k_skipped": 0,
+  "test_accuracy_combined": 0.6816608996539792,
+  "test_accuracy_real_only": 0.6073059360730594,
+  "n_real_in_test": 219,
+  "val_accuracy": 0.6993006993006993
+}
