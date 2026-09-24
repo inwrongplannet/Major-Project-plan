@@ -97,8 +97,22 @@ def main() -> None:
     args = parser.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    all_results = []
+    
+    summary_path = args.out_dir / "summary.json"
+    if summary_path.exists():
+        with open(summary_path) as f:
+            summary_data = json.load(f)
+        all_results = summary_data.get("per_seed_results", [])
+    else:
+        all_results = []
+        
+    completed_seeds = {r["seed"] for r in all_results}
+    
     for seed in args.seeds:
+        if seed in completed_seeds:
+            print(f"=== seed {seed} (already completed, skipping) ===")
+            continue
+            
         print(f"=== seed {seed} ({len(all_results) + 1}/{len(args.seeds)}) ===")
         result = run_one_seed(seed, args.esc50_root, args.us8k_root, args.epochs,
                                args.n_synthetic, args.max_per_us8k_category, args.n_frames,

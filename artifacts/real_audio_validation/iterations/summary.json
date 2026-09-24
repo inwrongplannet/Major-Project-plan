@@ -4,10 +4,15 @@
     43,
     44,
     45,
-    46
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
   ],
-  "n_seeds_completed": 5,
-  "n_seeds_requested": 5,
+  "n_seeds_completed": 10,
+  "n_seeds_requested": 10,
   "per_seed_results": [
     {
       "seed": 42,
@@ -63,10 +68,65 @@
       "test_accuracy_real_only": 0.6359447004608295,
       "n_real_in_test": 217,
       "val_accuracy": 0.7421602787456446
+    },
+    {
+      "seed": 47,
+      "n_synthetic": 600,
+      "n_esc50": 480,
+      "n_us8k": 360,
+      "n_us8k_skipped": 0,
+      "test_accuracy_combined": 0.71280276816609,
+      "test_accuracy_real_only": 0.6651376146788991,
+      "n_real_in_test": 218,
+      "val_accuracy": 0.7152777777777778
+    },
+    {
+      "seed": 48,
+      "n_synthetic": 600,
+      "n_esc50": 480,
+      "n_us8k": 360,
+      "n_us8k_skipped": 0,
+      "test_accuracy_combined": 0.7212543554006968,
+      "test_accuracy_real_only": 0.6894977168949772,
+      "n_real_in_test": 219,
+      "val_accuracy": 0.7118055555555556
+    },
+    {
+      "seed": 49,
+      "n_synthetic": 600,
+      "n_esc50": 480,
+      "n_us8k": 360,
+      "n_us8k_skipped": 0,
+      "test_accuracy_combined": 0.7439446366782007,
+      "test_accuracy_real_only": 0.6880733944954128,
+      "n_real_in_test": 218,
+      "val_accuracy": 0.7534722222222222
+    },
+    {
+      "seed": 50,
+      "n_synthetic": 600,
+      "n_esc50": 480,
+      "n_us8k": 360,
+      "n_us8k_skipped": 0,
+      "test_accuracy_combined": 0.6907216494845361,
+      "test_accuracy_real_only": 0.6318181818181818,
+      "n_real_in_test": 220,
+      "val_accuracy": 0.6818181818181818
+    },
+    {
+      "seed": 51,
+      "n_synthetic": 600,
+      "n_esc50": 480,
+      "n_us8k": 360,
+      "n_us8k_skipped": 0,
+      "test_accuracy_combined": 0.6875,
+      "test_accuracy_real_only": 0.6192660550458715,
+      "n_real_in_test": 218,
+      "val_accuracy": 0.7083333333333334
     }
   ],
-  "real_only_accuracy_mean": 0.6569070080407228,
-  "real_only_accuracy_stdev": 0.04072946979930621,
+  "real_only_accuracy_mean": 0.6578328003136956,
+  "real_only_accuracy_stdev": 0.034600127335486855,
   "real_only_accuracy_min": 0.6073059360730594,
   "real_only_accuracy_max": 0.7110091743119266
 }
