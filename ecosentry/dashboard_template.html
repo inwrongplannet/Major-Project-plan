@@ -578,6 +578,14 @@
     <div id="delivery-funnel"></div>
   </section>
 
+  <section id="real-audio-validation">
+    <div class="section-head">
+      <h2>Real-audio validation</h2>
+      <div class="note">Zero-shot transfer and retraining results against ESC-50 and UrbanSound8K -- see artifacts/real_audio_validation/SUMMARY.md and SUMMARY_US8K.md for full detail</div>
+    </div>
+    <div id="real-audio-content"></div>
+  </section>
+
 </main>
 
 <footer class="wrap">
@@ -589,7 +597,7 @@
       <div class="cmd">python -m ecosentry run --preset quick</div>
     </div>
     <div style="text-align:right">
-      110 tests &middot; ~20s<br/>
+      145 tests &middot; ~20s<br/>
       <span class="mono">generated August 2026</span>
     </div>
   </div>
@@ -701,6 +709,50 @@
     }
     svg += '</svg>';
     funnelContainer.innerHTML = svg;
+  }
+
+  var rav = report.real_audio_validation;
+  var ravContainer = document.getElementById('real-audio-content');
+  if (ravContainer) {
+    if (!rav) {
+      ravContainer.innerHTML = '<p class="note">Not yet run in this checkout. '
+        + 'See ESC50_REAL_AUDIO_VALIDATION_PLAN.md and URBANSOUND8K_INTEGRATION_PLAN.md '
+        + 'to generate artifacts/real_audio_validation/.</p>';
+    } else {
+      var rows = '';
+      function pct(x) { return (x === null || x === undefined) ? 'n/a' : (x * 100).toFixed(1) + '%'; }
+
+      if (rav.esc50_zero_shot) {
+        rows += '<tr><td>ESC-50 zero-shot (argmax accuracy)</td><td>' + pct(rav.esc50_zero_shot.argmax_accuracy)
+          + '</td><td>n=' + rav.esc50_zero_shot.n_real_clips + '</td></tr>';
+      }
+      if (rav.esc50_retrain) {
+        rows += '<tr><td>ESC-50 retrained (real-only accuracy)</td><td>' + pct(rav.esc50_retrain.test_accuracy_real_only)
+          + '</td><td>n=' + rav.esc50_retrain.n_real_in_test_split + '</td></tr>';
+      }
+      if (rav.us8k_zero_shot && rav.us8k_zero_shot.alert_decision_by_true_class
+          && rav.us8k_zero_shot.alert_decision_by_true_class.gunshot) {
+        var g = rav.us8k_zero_shot.alert_decision_by_true_class.gunshot;
+        rows += '<tr><td>UrbanSound8K zero-shot gunshot alert rate</td><td>' + pct(g.alert_rate)
+          + '</td><td>n=' + g.n + '</td></tr>';
+      }
+      if (rav.iterations_summary) {
+        var it = rav.iterations_summary;
+        rows += '<tr><td>Combined multi-seed real-only accuracy</td><td>' + pct(it.real_only_accuracy_mean)
+          + (it.real_only_accuracy_stdev != null ? ' &plusmn; ' + pct(it.real_only_accuracy_stdev) : '')
+          + '</td><td>' + it.n_seeds_completed + ' seeds</td></tr>';
+        if ('gunshot_real_recall_mean' in it) {
+          rows += '<tr><td>Combined multi-seed gunshot recall (real)</td><td>' + pct(it.gunshot_real_recall_mean)
+            + (it.gunshot_real_recall_stdev != null ? ' &plusmn; ' + pct(it.gunshot_real_recall_stdev) : '')
+            + '</td><td>' + (it.n_seeds_with_real_gunshot_in_test || 0) + ' qualifying seeds</td></tr>';
+        } else {
+          rows += '<tr><td>Combined multi-seed gunshot recall (real)</td><td colspan="2">'
+            + 'not tracked in this run -- re-run after applying the per-class tracking patch</td></tr>';
+        }
+      }
+      ravContainer.innerHTML = '<table class="rav-table"><thead><tr><th>Metric</th><th>Value</th><th>Sample size</th></tr></thead><tbody>'
+        + rows + '</tbody></table>';
+    }
   }
 })();
 </script>

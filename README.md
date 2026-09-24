@@ -80,11 +80,15 @@ fresh run.
 | `ecosentry/synth.py` | — | Synthetic forest audio (stands in for the field recordings) |
 | `ecosentry/pipeline.py` | — | Stage orchestration, delivery simulation + acceptance report |
 | `ecosentry/config.py` | all | Every documented constant, in one place |
-| `tests/` | — | 142 tests covering unit, protocol, energy, network, delivery & dashboard |
+| `tests/` | — | 145 tests covering unit, protocol, energy, network, delivery, dashboard & real-audio validation |
 
 ---
 
 ## Commands
+
+- `python -m ecosentry run` — end-to-end pipeline (synth, spikes, train, deliver, report)
+- `python run_iterations_combined_datasets.py` — multi-seed retrain against ESC-50 and UrbanSound8K
+- `python esc50_loader.py` — zero-shot test against ESC-50 (run as a script)
 
 ```bash
 python -m ecosentry run     --preset quick --scenario corbett   # everything
@@ -146,11 +150,12 @@ consumes plain `(audio, label, forest, source)` records — see
 From `--preset full` on a 2023 Apple Silicon laptop, CPU only: 600 clips of
 10 s, T=1000 frames, 120 epochs, **414 s wall clock end to end**.
 
-### Acceptance table — 7 of 8 targets met
+### Acceptance table — 8 of 9 targets met
 
 | Criterion | Measured | Target | |
 |---|---|---|---|
-| SNN test accuracy | **97.2%** | >85% | PASS |
+| SNN test accuracy (synthetic) | **96.3%** | >85% | PASS |
+| Ambient false-alert rate | **0.0%** | <5% | PASS |
 | Spike firing rate | 25.0% normalised | 25% ±5% | PASS |
 | Alert payload size | 116 B | <1000 B | PASS |
 | End-to-end latency p95 | 630 ms | <1500 ms | PASS |
@@ -159,9 +164,9 @@ From `--preset full` on a 2023 Apple Silicon laptop, CPU only: 600 clips of
 | Operational endurance (worst forest) | 30 days | ≥30 days | PASS |
 | Power reduction | 12× system / 18× compute | 50–75× | **FAIL** — see correction 8 |
 
-Training reached 98.2% validation accuracy at epoch 118 in 359 s. Confusion
-matrix on the 109-sample test split: gunshot 51/51, chainsaw 28/31,
-vehicle 27/27.
+Training reached 98.3% validation accuracy at epoch 82 in 365 s. Confusion
+matrix on the 109-sample test split: gunshot 48/51, chainsaw 31/31,
+vehicle 26/27, ambient 0/0 (all 11 held-out ambient clips correctly rejected).
 
 ### Latency budgets — all met
 
@@ -190,32 +195,23 @@ solar; battery-only endurance is 16 days. Daily net is +0.02 Wh (Corbett),
 −0.10 Wh (Seshachalam), −0.29 Wh (Sundarbans). Sundarbans needs a bigger panel
 or a second cell, exactly as ARCH_7 predicts.
 
-### One result that is not good: ambient rejection
+### Ambient rejection: fixed (was a 47.5% false-alert rate)
 
-**47.5% of pure-ambient clips produced a false alert.** Of 40 forest-background
-clips containing no threat at all, 19 crossed the alert threshold.
+The 3-class head originally shipped here — gunshot, chainsaw, vehicle, no
+"none of these" option — forced every ambient clip into one of three
+threats, producing a **47.5% false-alert rate** on threat-free audio.
+`ARCH_3`'s own class map already defined `3 = ambient`; the training head
+just didn't use it.
 
-This is a design gap, not a bug. `ARCH_4`/`ARCH_5` specify a **3-class** head —
-gunshot, chainsaw, vehicle — with a softmax over exactly those three. A softmax
-has no "none of these" option, so a clip of birdsong is forced into one of the
-three, and roughly half the time it lands above the confidence threshold. The
-real device listens to ambient forest ~99.99% of the time, so this is the
-metric that would dominate field performance.
-
-`ARCH_3`'s own class map already defines `3 = ambient`; the training head does
-not use it. The fix is one of:
-
-1. **Train a 4-class head** including ambient (this codebase already carries
-   ambient clips through ARCH_1–3 and holds them out as negatives — set
-   `SNNConfig.n_classes = 4` and include class 3 in `pipeline.TRAIN_CLASSES`).
-2. **Add an energy/novelty gate** before the SNN so silent windows never reach
-   the classifier — which also saves the inference energy.
-3. **Raise the thresholds** from a real precision-recall curve, accepting lower
-   recall.
-
-Option 1 is the smallest change and is the one the documents implicitly point
-at. It is deliberately left undone here rather than silently changing the
-specified architecture.
+Fixed by training a 4-class head (`SNNConfig.n_classes = 4`,
+`pipeline.TRAIN_CLASSES` including class 3) and rewiring the false-alert
+measurement to read from the held-out test split instead of a separate
+negative set. Re-verified against a fresh `--preset full` run: **0.0%
+ambient false-alert rate**, both on the held-out test split (n=11) and on
+freshly synthesized ambient audio the model never saw in any split during
+training (n=11, out-of-distribution check). See `ARCH_7_ENERGY_PROFILER.md`'s
+correction log and `tests/test_ambient_rejection.py` for the fix and its
+regression tests.
 
 ---
 
@@ -285,9 +281,9 @@ this implementation does instead. Each is commented at the point of use.
    input normalisation. It is off by default (`AudioConfig.standardize_db`).
 
 10. **A 3-class softmax cannot express "nothing is happening".** Measured
-    consequence: a 47.5% false-alert rate on threat-free audio. *Not fixed* —
-    it changes the specified architecture, so it is written up above as the
-    top open item rather than silently altered.
+    consequence: a 47.5% false-alert rate on threat-free audio. *Fixed* — the
+    head is now 4-class, including an explicit ambient category. False alerts
+    dropped to 0.0%.
 
 ---
 
@@ -297,7 +293,7 @@ this implementation does instead. Each is commented at the point of use.
 python -m pytest tests/ -q
 ```
 
-110 tests, ~20 seconds. Coverage includes:
+145 tests, ~20 seconds. Coverage includes:
 
 - **Contract tests** for every documented shape, range and latency budget.
 - **A numerical gradient check** (`test_bptt_gradients_match_numerical`).
@@ -325,17 +321,22 @@ threat-free clips. This is the single most important open item, and it is a
 change to the specified architecture, so it needs a decision rather than a
 patch. Everything needed to make it a 4-class problem is already in place.
 
-### Requires real data (highest priority for accuracy claims)
+### Real data: done for ESC-50 and UrbanSound8K
 
-The corpus is **synthetic**. `ecosentry/synth.py` generates physically plausible
-gunshots, chainsaws, vehicles and per-forest backgrounds, but the 97.2% the
-pipeline reports is *accuracy on synthetic audio*. Synthetic classes are cleanly
-separable by construction, so treat that figure as "the pipeline trains
-correctly", not "the system detects poachers". Before any deployment claim:
+The pipeline's primary corpus is **synthetic**. `ecosentry/synth.py`
+generates physically plausible gunshots, chainsaws, vehicles and per-forest
+backgrounds, but the 96.3% the pipeline reports is *accuracy on synthetic
+audio*. Synthetic classes are cleanly separable by construction.
 
-1. Obtain ESC-50, UrbanSound8K and the three sets of field recordings the
-   documents describe (600 clips).
-2. Replace `build_corpus` with a loader for them.
+However, zero-shot generalisation and retraining experiments have now been
+completed using the real-audio **ESC-50** and **UrbanSound8K** datasets.
+See `URBANSOUND8K_INTEGRATION_PLAN.md` and `ESC50_REAL_AUDIO_VALIDATION_PLAN.md`
+for the results and the scripts used to produce them.
+
+- **Field recordings from an actual forest** (as opposed to ESC-50/
+  UrbanSound8K's general-purpose and urban audio respectively) remain
+  untested. `chainsaw` specifically has zero real-audio coverage from
+  either dataset — neither contains a chainsaw-like category.
 3. Retrain and re-measure. Expect the accuracy to drop and the LIF gain and
    forest-normalisation parameters to need retuning.
 

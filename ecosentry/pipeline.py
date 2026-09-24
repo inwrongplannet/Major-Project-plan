@@ -812,11 +812,39 @@ def acceptance_summary(stage1: Dict, stage2: Dict, stage3: Dict, stage4: Dict) -
     }
 
 
+def _load_real_audio_validation(out_dir: Path) -> Optional[Dict]:
+    """Best-effort load of committed real-audio validation results, if any
+    exist under out_dir/real_audio_validation/. Returns None if the
+    directory or its expected files are missing -- this must never raise,
+    since real-audio validation runs separately (it needs external
+    datasets not bundled with this repo) and is optional from the main
+    pipeline's point of view."""
+    base = out_dir / "real_audio_validation"
+    result: Dict = {}
+    for key, filename in (
+        ("esc50_zero_shot", "experiment1_zero_shot.json"),
+        ("esc50_retrain", "experiment2_retrain.json"),
+        ("us8k_zero_shot", "experiment3_us8k_zero_shot.json"),
+        ("iterations_summary", "iterations/summary.json"),
+    ):
+        path = base / filename
+        if path.exists():
+            try:
+                result[key] = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+    return result or None
+
+
 def render_dashboard(report: Dict, out_dir: Path) -> Path:
     """Fill dashboard_template.html with this run's pipeline_report.json
-    and write the result to out_dir/dashboard.html (Phase 0, Task P0.3)."""
+    and write the result to out_dir/dashboard.html (Phase 0, Task P0.3).
+    Also attaches committed real-audio validation results, if present,
+    under report["real_audio_validation"] -- see _load_real_audio_validation."""
     template_path = Path(__file__).parent / "dashboard_template.html"
     template = template_path.read_text(encoding="utf-8")
+    report = dict(report)
+    report["real_audio_validation"] = _load_real_audio_validation(out_dir)
     injected = template.replace("__REPORT_JSON__", json.dumps(report, default=str))
     out_path = out_dir / "dashboard.html"
     out_path.write_text(injected, encoding="utf-8")

@@ -68,6 +68,16 @@ def run_one_seed(seed: int, esc50_root: Path, us8k_root: Path, epochs: int,
     real_result = evaluate(model, prepared["test"]["spikes"][real_mask],
                             prepared["test"]["labels"][real_mask]) if n_real > 0 else None
 
+    # evaluate() already computes a per-class breakdown and confusion matrix
+    # -- only "accuracy" was being kept before, which made it impossible to
+    # tell whether gunshot specifically improved after retraining, or
+    # whether a decent aggregate was hiding a persistent gunshot failure
+    # behind good vehicle/ambient numbers. Save what was already being
+    # computed instead of discarding it.
+    gunshot_real_metrics = (
+        real_result["per_class"].get("gunshot") if real_result and real_result.get("per_class") else None
+    )
+
     result = {
         "seed": seed,
         "n_synthetic": len(synthetic),
@@ -78,6 +88,11 @@ def run_one_seed(seed: int, esc50_root: Path, us8k_root: Path, epochs: int,
         "test_accuracy_real_only": real_result["accuracy"] if real_result else None,
         "n_real_in_test": n_real,
         "val_accuracy": stage2["val_accuracy"],
+        "test_confusion_matrix_real_only": real_result["confusion"].tolist() if real_result else None,
+        "test_per_class_real_only": real_result.get("per_class") if real_result else None,
+        "gunshot_real_recall": gunshot_real_metrics["recall"] if gunshot_real_metrics else None,
+        "gunshot_real_precision": gunshot_real_metrics["precision"] if gunshot_real_metrics else None,
+        "gunshot_real_support": gunshot_real_metrics["support"] if gunshot_real_metrics else None,
     }
     (seed_out_dir).mkdir(parents=True, exist_ok=True)
     (seed_out_dir / "result.json").write_text(json.dumps(result, indent=2, default=str))
@@ -120,6 +135,18 @@ def main() -> None:
         all_results.append(result)
         print(f"  test_accuracy_real_only: {result['test_accuracy_real_only']}")
         real_accs = [r["test_accuracy_real_only"] for r in all_results if r["test_accuracy_real_only"] is not None]
+        # Aggregate gunshot recall specifically, the same way real_only
+        # accuracy is aggregated -- this is the number that answers "did
+        # retraining fix real gunshot detection" rather than only "did the
+        # average of gunshot+vehicle+ambient improve." A seed contributes
+        # to this aggregate only if at least one real gunshot clip actually
+        # landed in that seed's held-out test split (gunshot_real_support
+        # is not None and > 0) -- a seed where none did says nothing about
+        # gunshot and must not silently count as "0% recall".
+        gunshot_recalls = [
+            r["gunshot_real_recall"] for r in all_results
+            if r.get("gunshot_real_support") is not None and r["gunshot_real_support"] > 0
+        ]
         summary = {
             "seeds_completed": [r["seed"] for r in all_results],
             "n_seeds_completed": len(all_results),
@@ -129,14 +156,26 @@ def main() -> None:
             "real_only_accuracy_stdev": statistics.stdev(real_accs) if len(real_accs) > 1 else None,
             "real_only_accuracy_min": min(real_accs) if real_accs else None,
             "real_only_accuracy_max": max(real_accs) if real_accs else None,
+            "gunshot_real_recall_mean": statistics.mean(gunshot_recalls) if gunshot_recalls else None,
+            "gunshot_real_recall_stdev": statistics.stdev(gunshot_recalls) if len(gunshot_recalls) > 1 else None,
+            "n_seeds_with_real_gunshot_in_test": len(gunshot_recalls),
         }
         (args.out_dir / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
 
     print("\n=== FINAL SUMMARY ===")
     print(f"seeds: {summary['seeds_completed']}")
+    stdev_display = f"{summary['real_only_accuracy_stdev']:.1%}" if summary['real_only_accuracy_stdev'] is not None else "n/a (need 2+ seeds)"
     print(f"real_only_accuracy: mean={summary['real_only_accuracy_mean']:.1%}"
-          f"  stdev={summary['real_only_accuracy_stdev']:.1%}"
+          f"  stdev={stdev_display}"
           f"  range=[{summary['real_only_accuracy_min']:.1%}, {summary['real_only_accuracy_max']:.1%}]")
+    if summary["gunshot_real_recall_mean"] is not None:
+        gstdev = (f"{summary['gunshot_real_recall_stdev']:.1%}"
+                  if summary["gunshot_real_recall_stdev"] is not None else "n/a (need 2+ qualifying seeds)")
+        print(f"gunshot_real_recall: mean={summary['gunshot_real_recall_mean']:.1%}  stdev={gstdev}"
+              f"  (n_seeds_with_real_gunshot_in_test={summary['n_seeds_with_real_gunshot_in_test']}/{summary['n_seeds_completed']})")
+    else:
+        print("gunshot_real_recall: no seed had a real gunshot clip in its held-out test split -- "
+              "check max_per_us8k_category and n_frames/seed settings")
 
 
 if __name__ == "__main__":
