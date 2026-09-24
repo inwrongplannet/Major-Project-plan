@@ -141,3 +141,4 @@ Resources/
 *.npz
 *.h5
 samples/
+artifacts/archive/
