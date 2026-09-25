@@ -7,5 +7,60 @@
   "test_accuracy_combined": 0.7212543554006968,
   "test_accuracy_real_only": 0.6894977168949772,
   "n_real_in_test": 219,
-  "val_accuracy": 0.7118055555555556
+  "val_accuracy": 0.7118055555555556,
+  "test_confusion_matrix_real_only": [
+    [
+      25,
+      0,
+      8,
+      6
+    ],
+    [
+      0,
+      13,
+      0,
+      6
+    ],
+    [
+      4,
+      2,
+      62,
+      19
+    ],
+    [
+      9,
+      0,
+      14,
+      51
+    ]
+  ],
+  "test_per_class_real_only": {
+    "gunshot": {
+      "precision": 0.6579,
+      "recall": 0.641,
+      "f1": 0.6494,
+      "support": 39
+    },
+    "chainsaw": {
+      "precision": 0.8667,
+      "recall": 0.6842,
+      "f1": 0.7647,
+      "support": 19
+    },
+    "vehicle": {
+      "precision": 0.7381,
+      "recall": 0.7126,
+      "f1": 0.7251,
+      "support": 87
+    },
+    "ambient": {
+      "precision": 0.622,
+      "recall": 0.6892,
+      "f1": 0.6538,
+      "support": 74
+    }
+  },
+  "gunshot_real_recall": 0.641,
+  "gunshot_real_precision": 0.6579,
+  "gunshot_real_support": 39
 }
