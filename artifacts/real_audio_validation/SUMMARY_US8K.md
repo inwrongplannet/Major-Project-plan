@@ -19,6 +19,8 @@ To ensure robustness and meet rigorous research integrity standards, the retrain
 
 The mean accuracy on real-audio test clips across the 10 seeds is **65.8% ± 3.5%** standard deviation. The tighter standard deviation across 10 iterations confirms that the model's accuracy on mixed real-world audio datasets is extremely robust and not heavily sensitive to random initialization or split differences.
 
+Crucially, with the inclusion of the per-class metrics tracking, the combined real-audio gunshot recall across the 10 seeds was measured at **69.2% ± 6.5%**. This is a massive improvement over the initial 9.1% zero-shot alert rate, confirming that retraining on UrbanSound8K successfully enables the model to detect real-world gunshot audio.
+
 **Per-Seed Breakdown:**
 - **Seed 42:** 64.7% (n=218)
 - **Seed 43:** 68.3% (n=218)
@@ -38,7 +40,7 @@ The mean accuracy on real-audio test clips across the 10 seeds is **65.8% ± 3.5
 | ESC-50 zero-shot (earlier plan) | 15.6% | 480 | No |
 | ESC-50 retrained, real-only (earlier plan) | 67.1% | 146 | No |
 | UrbanSound8K zero-shot, gunshot only (T4) | 9.1% | 374 | Yes |
-| ESC-50 + UrbanSound8K retrained, real-only, 10 seeds (T7) | 65.8% ± 3.5% | 217-220 | Yes |
+| ESC-50 + UrbanSound8K retrained, real-only, 10 seeds (T7) | 65.8% ± 3.5% (Gunshot recall: 69.2% ± 6.5%) | 217-220 | Yes |
 
 ## Limitations
 - **Chainsaw Category:** The `chainsaw` category remains unrepresented in the real-audio validation. Neither ESC-50 nor UrbanSound8K contains chainsaw samples, meaning it remains a synthetic-only class in our evaluation.
